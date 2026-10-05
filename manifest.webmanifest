@@ -2,7 +2,7 @@
   "name": "NST専門療法士認定試験 問題演習",
   "short_name": "NST Quiz",
   "description": "NST専門療法士認定試験の問題演習アプリ",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f5f7fa",
@@ -10,12 +10,12 @@
   "lang": "ja",
   "icons": [
     {
-      "src": "./icons/icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "./icons/icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
