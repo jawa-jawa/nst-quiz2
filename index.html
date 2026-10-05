@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f8fafc">
+<meta name="application-name" content="NST Quiz">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="NST Quiz">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+
+<title>NST専門療法士認定試験 問題演習</title>
+<style>
+:root{
+  --bg:#f5f7fa; --card:#ffffff; --text:#172033; --muted:#667085;
+  --line:#d9e0e8; --primary:#1d4ed8; --primary2:#2563eb;
+  --ok:#087f5b; --okbg:#e9f8f1; --ng:#c92a2a; --ngbg:#fff0f0;
+  --warn:#9a6700; --shadow:0 4px 18px rgba(15,23,42,.07);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic UI","Yu Gothic",
+  "Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
+body{min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{max-width:1050px;margin:0 auto;padding:18px 16px 48px}
+h1{font-size:clamp(24px,4vw,34px);margin:8px 0 22px}
+h2{font-size:21px;margin:0 0 14px}
+h3{font-size:18px;margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  box-shadow:var(--shadow);padding:18px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fbfcfe}
+.stat .n{font-weight:750;font-size:24px;margin-top:5px}
+.muted{color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.space{justify-content:space-between}
+.btn{border:1px solid #b8c2cf;border-radius:10px;background:#fff;color:var(--text);
+  min-height:44px;padding:10px 15px;font-weight:650}
+.btn:hover{background:#f7f9fc}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.primary:hover{background:#1e40af}
+.btn.danger{border-color:#efb0b0;color:#9f1d1d}
+.btn.small{min-height:36px;padding:7px 10px;font-size:14px}
+.input{border:1px solid #aeb9c6;border-radius:9px;padding:10px 12px;min-height:44px;background:#fff}
+.num{width:100px}
+.notice{font-size:14px;color:var(--muted);line-height:1.6}
+.hidden{display:none!important}
+hr{border:0;border-top:1px solid var(--line);margin:17px 0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:left;vertical-align:top}
+th{background:#f8fafc;position:sticky;top:0}
+.table-wrap{overflow:auto;max-height:330px;border:1px solid var(--line);border-radius:10px}
+.quiz-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  align-items:center;margin-bottom:12px}
+.progress{font-size:15px;font-weight:650}
+.question{font-size:clamp(19px,3.7vw,24px);font-weight:750;line-height:1.55;margin:18px 0}
+.choice{display:flex;align-items:flex-start;gap:11px;border:1px solid var(--line);
+  border-radius:12px;padding:13px 14px;margin:10px 0;background:#fff;line-height:1.5}
+.choice:hover{background:#f8fafc}
+.choice input{width:20px;height:20px;margin-top:2px;flex:0 0 auto}
+.choice.correct{border-color:#4fbd94;background:var(--okbg)}
+.choice.wrong{border-color:#ee9292;background:var(--ngbg)}
+.choice.disabled{cursor:default}
+.result-mark{font-size:24px;font-weight:800;margin:14px 0}
+.ok{color:var(--ok)}
+.ng{color:var(--ng)}
+.explain{white-space:pre-wrap;line-height:1.7;background:#f8fafc;border:1px solid var(--line);
+  border-radius:12px;padding:15px;margin:12px 0}
+.ref{font-size:14px;color:#475467;line-height:1.6}
+.big-score{font-size:38px;font-weight:800;margin:7px 0}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.48);z-index:50;
+  display:flex;align-items:center;justify-content:center;padding:14px}
+.modal-panel{background:#fff;border-radius:15px;box-shadow:0 18px 50px rgba(0,0,0,.23);
+  width:min(980px,100%);max-height:92vh;display:flex;flex-direction:column}
+.modal-head,.modal-foot{padding:14px 16px;border-bottom:1px solid var(--line)}
+.modal-foot{border-top:1px solid var(--line);border-bottom:0}
+.modal-body{padding:14px 16px;overflow:auto}
+.sel-row{display:grid;grid-template-columns:42px 82px 1fr;gap:10px;align-items:start;
+  border-bottom:1px solid #edf0f4;padding:10px 4px}
+.sel-row input{width:20px;height:20px}
+.sel-q{line-height:1.45}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#eef3ff;
+  color:#274690;font-size:12px;font-weight:700}
+.chart-wrap{border:1px solid var(--line);border-radius:10px;padding:6px;background:#fff}
+canvas{display:block;width:100%;height:220px}
+.history-empty{padding:10px;color:var(--muted)}
+.footer-note{font-size:12px;color:#7b8794;margin-top:16px;line-height:1.6}
+@media(max-width:700px){
+  .app{padding:12px 10px 34px}
+  .card{padding:14px;border-radius:12px}
+  .grid{grid-template-columns:1fr}
+  .stat{display:flex;justify-content:space-between;align-items:center}
+  .stat .n{font-size:21px;margin:0}
+  .btn{width:100%}
+  .row.mobile-stack{display:grid;grid-template-columns:1fr}
+  .num{width:100%}
+  .choice{padding:13px 11px}
+  .sel-row{grid-template-columns:36px 62px 1fr}
+  table{font-size:12px}
+  th,td{padding:7px 5px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <section id="homeScreen">
+    <h1>NST専門療法士認定試験 問題演習</h1>
+
+
+    <div id="jsWarning" class="card" style="border-color:#f0b429;background:#fff8e6">
+      <strong>この開き方ではクイズ機能が動いていません。</strong>
+      <div class="notice" style="margin-top:6px;color:#7a5b00">
+        iPhoneの「ファイル」アプリのプレビューではJavaScriptが実行されないことがあります。
+        HTTPSで公開したこのアプリをSafariで開き、「共有」→「ホーム画面に追加」から起動してください。
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="grid">
+        <div class="stat"><div class="muted">収録問題</div><div class="n" id="totalCount">195問</div></div>
+        <div class="stat"><div class="muted">演習対象</div><div class="n" id="selectedCount">195問</div></div>
+        <div class="stat"><div class="muted">保存履歴</div><div class="n" id="historyCount">0件</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row space">
+        <div>
+          <h2>通常演習</h2>
+          <div class="notice">選択した問題の中から、重複なしでランダム出題します。</div>
+        </div>
+        <button class="btn" id="openSelectorBtn">演習する問題を選択</button>
+      </div>
+      <hr>
+      <div class="row mobile-stack">
+        <label>出題数
+          <input id="quizCount" class="input num" type="number" min="1" inputmode="numeric" value="20">
+        </label>
+        <button class="btn primary" id="startBtn">通常演習を開始</button>
+      </div>
+      <div id="countHint" class="notice" style="margin-top:9px"></div>
+    </div>
+
+    <div class="card">
+      <div class="row space">
+        <div>
+          <h2>正答率の推移</h2>
+          <div class="notice">通常演習のみ表示します。横軸は古い演習から1、2、3…です。</div>
+        </div>
+        <button class="btn small danger" id="clearHistoryBtn">履歴を消去</button>
+      </div>
+      <div class="chart-wrap" style="margin-top:12px">
+        <canvas id="scoreChart" height="220"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>学習履歴・復習</h2>
+      <div class="notice" style="margin-bottom:10px">
+        履歴はこの端末のブラウザ内に保存されます。復習では、その回に間違えた問題だけを出題します。
+      </div>
+      <div class="table-wrap" style="max-height:290px">
+        <table>
+          <thead><tr><th>日時</th><th>モード</th><th>結果</th><th>復習</th></tr></thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      このHTMLは問題データを内部に含むため、実行時にExcelファイルは不要です。
+      学習履歴はブラウザのlocalStorageを利用しており、ブラウザ設定やファイルの開き方によっては保存されない場合があります。
+    </div>
+  </section>
+
+  <section id="quizScreen" class="hidden">
+    <div class="quiz-head">
+      <div>
+        <h2 id="modeTitle">通常演習</h2>
+        <div class="progress" id="progressText"></div>
+      </div>
+      <button class="btn danger" id="earlyFinishBtn">途中で終了</button>
+    </div>
+    <div class="card">
+      <div class="badge" id="questionNoBadge"></div>
+      <div class="question" id="questionText"></div>
+      <div id="choices"></div>
+      <div class="row" style="margin-top:16px">
+        <button class="btn primary" id="answerBtn">回答する</button>
+        <button class="btn primary hidden" id="nextBtn">次の問題</button>
+      </div>
+      <div id="feedback" class="hidden"></div>
+    </div>
+  </section>
+
+  <section id="resultScreen" class="hidden">
+    <h1>演習結果</h1>
+    <div class="card">
+      <div class="muted" id="resultMode"></div>
+      <div class="big-score" id="resultScore"></div>
+      <div id="resultDetail"></div>
+    </div>
+    <div class="card">
+      <h2>不正解問題</h2>
+      <div id="wrongList"></div>
+    </div>
+    <div class="row mobile-stack">
+      <button class="btn" id="homeBtn">ホームに戻る</button>
+      <button class="btn" id="retryBtn">同じ条件でもう一度</button>
+      <button class="btn primary" id="reviewWrongBtn">不正解だけ復習</button>
+    </div>
+  </section>
+</div>
+
+<div id="selectorModal" class="modal hidden">
+  <div class="modal-panel">
+    <div class="modal-head">
+      <div class="row space">
+        <div>
+          <h2 style="margin:0">演習する問題を選択</h2>
+          <div class="notice"><span id="selectorSelectedCount"></span></div>
+        </div>
+        <button class="btn small" id="closeSelectorBtn">閉じる</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="row" style="margin-bottom:10px">
+        <input id="selectorSearch" class="input" type="search" placeholder="問題番号・問題文で検索" style="flex:1;min-width:200px">
+        <button class="btn small" id="selectAllBtn">すべて選択</button>
+        <button class="btn small" id="clearAllBtn">すべて解除</button>
+        <button class="btn small" id="invertBtn">選択反転</button>
+      </div>
+      <div id="selectorList"></div>
+    </div>
+    <div class="modal-foot">
+      <div class="row space">
+        <span class="notice">変更は自動保存されます。</span>
+        <button class="btn primary" id="applySelectorBtn">適用して閉じる</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [{"id":"q1","quizNumber":1,"question":"咬筋・側頭筋・翼突筋への運動支配をまとめて担う脳神経を1つ選べ。","choices":["顔面神経","内耳神経","舌下神経","舌咽神経","三叉神経"],"answer":5,"answerText":"5. 三叉神経","explanation":"正答: 5\n1: 舌前方2/3の味覚や表情筋に関与する。\n2: 聴覚と平衡覚に関与する。\n3: オトガイ舌筋などの舌筋を支配する。\n4: 舌後方1/3の味覚に関与する。\n5: 咀嚼筋は三叉神経の下顎神経に支配される。","referencePage":"2,3","referenceQuestion":"1","excelRow":2},{"id":"q2","quizNumber":2,"question":"咀嚼に伴う舌の働きを考えるとき、オトガイ舌筋を支配する脳神経を1つ選べ。","choices":["三叉神経","舌下神経","舌咽神経","顔面神経","内耳神経"],"answer":2,"answerText":"2. 舌下神経","explanation":"正答: 2\n1: 咀嚼筋は三叉神経の下顎神経に支配される。\n2: オトガイ舌筋などの舌筋を支配する。\n3: 舌後方1/3の味覚に関与する。\n4: 舌前方2/3の味覚や表情筋に関与する。\n5: 聴覚と平衡覚に関与する。","referencePage":"2,3","referenceQuestion":"1","excelRow":3},{"id":"q3","quizNumber":3,"question":"食物の認知に関わる感覚のうち、舌後方1/3の味覚に関与する脳神経を1つ選べ。","choices":["三叉神経","舌下神経","舌咽神経","内耳神経","顔面神経"],"answer":3,"answerText":"3. 舌咽神経","explanation":"正答: 3\n1: 咀嚼筋は三叉神経の下顎神経に支配される。\n2: オトガイ舌筋などの舌筋を支配する。\n3: 舌後方1/3の味覚に関与する。\n4: 聴覚と平衡覚に関与する。\n5: 舌前方2/3の味覚や表情筋に関与する。","referencePage":"2,3","referenceQuestion":"1","excelRow":4},{"id":"q4","quizNumber":4,"question":"器質的口腔ケアの中心となる行為を1つ選べ。","choices":["咀嚼機能の回復だけを目指す。","舌の運動訓練だけを行う。","嚥下機能の訓練だけを行う。","唾液分泌の促進だけを目的とする。","歯面のバイオフィルムをブラッシングで除去する。"],"answer":5,"answerText":"5. 歯面のバイオフィルムをブラッシングで除去する。","explanation":"正答: 5\n1: 咀嚼機能の維持・回復は機能的ケアの目的である。\n2: 舌の運動は機能的ケアに位置付けられる。\n3: 嚥下機能への働きかけは機能的ケアに当たる。\n4: 唾液分泌の促進は機能的ケアの目的である。\n5: 器質的ケアは口腔衛生管理を目的とし、機械的清掃が必要である。","referencePage":"4,5","referenceQuestion":"2","excelRow":5},{"id":"q5","quizNumber":5,"question":"口腔ケアを継続する対象について、適切な説明を1つ選べ。","choices":["食事摂取が可能になれば不要となる。","食事を口から摂取できる人にも必要である。","周術期には実施する意義がない。","誤嚥性肺炎の予防とは関係しない。","摂食嚥下機能の維持には役立たない。"],"answer":2,"answerText":"2. 食事を口から摂取できる人にも必要である。","explanation":"正答: 2\n1: 食事摂取の可否によって必要性はなくならない。\n2: 食事摂取の可否に関わらず口腔ケアが必要である。\n3: 周術期の感染予防に重要である。\n4: 口腔ケアは誤嚥性肺炎の予防に有効である。\n5: 機能的ケアは摂食嚥下機能の維持・回復を目的とする。","referencePage":"4,5","referenceQuestion":"2","excelRow":6},{"id":"q6","quizNumber":6,"question":"口腔乾燥への対応と口腔機能の維持に関する組み合わせとして、適切なものを1つ選べ。","choices":["乾燥の放置と舌運動の中止","抗菌薬だけによるバイオフィルム除去","乾燥の放置と唾液分泌の抑制","保湿と唾液腺マッサージ","化学的清掃だけによる口腔ケア"],"answer":4,"answerText":"4. 保湿と唾液腺マッサージ","explanation":"正答: 4\n1: 保湿や舌などの運動を行う意義がある。\n2: バイオフィルムには抗菌薬が効きにくく、機械的清掃が必要である。\n3: 乾燥は汚れを付着させやすく、唾液分泌は促進する。\n4: 保湿は乾燥への対応、マッサージは唾液分泌促進に用いられる。\n5: 機械的清掃と化学的清掃の両方を行う。","referencePage":"4,5","referenceQuestion":"2","excelRow":7},{"id":"q7","quizNumber":7,"question":"摂食嚥下の5期モデルで、食物の認知から胃への移送までの順序として適切なものを1つ選べ。","choices":["先行期→口腔期→準備期→咽頭期→食道期","準備期→先行期→口腔期→食道期→咽頭期","食道期→咽頭期→口腔期→準備期→先行期","先行期→準備期→咽頭期→口腔期→食道期","先行期→準備期→口腔期→咽頭期→食道期"],"answer":5,"answerText":"5. 先行期→準備期→口腔期→咽頭期→食道期","explanation":"正答: 5\n1: 準備期に食塊を形成してから口腔期に移送する。\n2: 認知は咀嚼より先で、食道期は咽頭期の後である。\n3: 食物の移送方向と逆の順序である。\n4: 口腔期の移送は咽頭期の前である。\n5: 認知、咀嚼、咽頭への移送、嚥下反射、食道の蠕動の順である。","referencePage":"6,7,8","referenceQuestion":"3","excelRow":8},{"id":"q8","quizNumber":8,"question":"咀嚼によって形成された食塊を、舌の働きで咽頭へ送り出す過程を1つ選べ。","choices":["食道期","口腔期","先行期","咽頭期","準備期"],"answer":2,"answerText":"2. 口腔期","explanation":"正答: 2\n1: 食道の蠕動運動により食塊が胃へ運ばれる。\n2: 食塊を舌に乗せて咽頭へ移送する。\n3: 視覚・嗅覚の情報から食物を認知する。\n4: 嚥下反射により食塊が食道へ導かれる。\n5: 咀嚼して食塊を形成し、口腔内で保持する。","referencePage":"6,7,8","referenceQuestion":"3","excelRow":9},{"id":"q9","quizNumber":9,"question":"食塊が嚥下反射によって食道へ入り、続いて蠕動運動で胃に向かう。後半の過程に該当する時期を1つ選べ。","choices":["食道期","先行期","準備期","咽頭期","口腔期"],"answer":1,"answerText":"1. 食道期","explanation":"正答: 1\n1: 食道の蠕動運動により食塊が胃へ運ばれる。\n2: 視覚・嗅覚の情報から食物を認知する。\n3: 咀嚼して食塊を形成し、口腔内で保持する。\n4: 嚥下反射により食塊が食道へ導かれる。\n5: 食塊を舌に乗せて咽頭へ移送する。","referencePage":"6,7,8","referenceQuestion":"3","excelRow":10},{"id":"q10","quizNumber":10,"question":"食道の生理的狭窄部と、その形成に関わる構造の対応として適切なものを1つ選べ。","choices":["第3狭窄部―食道入口部","第2狭窄部―左主気管支や大動脈","第1狭窄部―横隔膜貫通部","第2狭窄部―横隔膜貫通部","第1狭窄部―左主気管支の圧迫部"],"answer":2,"answerText":"2. 第2狭窄部―左主気管支や大動脈","explanation":"正答: 2\n1: 食道入口部は第1である。\n2: 第2狭窄部は左主気管支・大動脈の圧迫に関わる。\n3: 第1は食道入口部、横隔膜貫通部は第3である。\n4: 横隔膜貫通部は第3である。\n5: 左主気管支の圧迫は第2に関わる。","referencePage":"9,10,11","referenceQuestion":"4","excelRow":11},{"id":"q11","quizNumber":11,"question":"胃食道逆流を防ぐ働きに関わるHis角の説明として適切なものを1つ選べ。","choices":["横隔膜を貫く食道の狭窄そのもの","腹部食道と胃穹窿部の間に形成される角度","門歯から噴門までの長さ","幽門と十二指腸の間の角度","左主気管支が食道を圧迫する部位"],"answer":2,"answerText":"2. 腹部食道と胃穹窿部の間に形成される角度","explanation":"正答: 2\n1: 横隔膜貫通部は第3生理的狭窄である。\n2: His角は腹部食道と胃穹窿部の間の角度で、逆流防止に関与する。\n3: His角は長さではなく角度である。\n4: His角は腹部食道と胃穹窿部の間にある。\n5: これは食道の第2生理的狭窄に関係する。","referencePage":"9,10,11","referenceQuestion":"4","excelRow":12},{"id":"q12","quizNumber":12,"question":"食道と胃の筋層を比較した記述として適切なものを1つ選べ。","choices":["胃と食道はいずれも筋層がない。","胃には食道の内輪筋・外縦筋に加えて内斜筋がある。","食道の内側の筋層は縦走筋である。","胃は内輪筋と外縦筋の2層だけである。","食道だけが内斜筋を持つ。"],"answer":2,"answerText":"2. 胃には食道の内輪筋・外縦筋に加えて内斜筋がある。","explanation":"正答: 2\n1: 食道・胃とも筋層を持つ。\n2: 食道は2層、胃は内斜筋を加えた3層である。\n3: 食道の筋層は内輪筋・外縦筋である。\n4: 胃には内斜筋が加わる。\n5: 内斜筋を加えた3層構造は胃である。","referencePage":"9,10,11","referenceQuestion":"4","excelRow":13},{"id":"q13","quizNumber":13,"question":"S状結腸の構造と血流に関する記述として適切なものを1つ選べ。","choices":["内側は縦走筋で、下腸間膜動脈から血流を受ける。","内側に輪走筋があり、下腸間膜動脈から血流を受ける。","内側は輪走筋で、上腸間膜動脈だけから血流を受ける。","外側の筋層は輪走筋だけである。","粘膜筋板が存在しない。"],"answer":2,"answerText":"2. 内側に輪走筋があり、下腸間膜動脈から血流を受ける。","explanation":"正答: 2\n1: 内側は輪走筋である。\n2: 結腸は内輪筋・外縦筋で、S状結腸は下腸間膜動脈の支配を受ける。\n3: S状結腸の血流は下腸間膜動脈から供給される。\n4: 外側は縦走筋である。\n5: 結腸には粘膜筋板が存在する。","referencePage":"12,13,14","referenceQuestion":"5","excelRow":14},{"id":"q14","quizNumber":14,"question":"結腸壁の内腔側から外側への基本構造として適切な順序を1つ選べ。","choices":["粘膜→筋層→粘膜下層→粘膜筋板","粘膜下層→粘膜→粘膜筋板→筋層","粘膜→粘膜下層→筋層で粘膜筋板は存在しない。","筋層→粘膜下層→粘膜筋板→粘膜","粘膜→粘膜筋板→粘膜下層→筋層"],"answer":5,"answerText":"5. 粘膜→粘膜筋板→粘膜下層→筋層","explanation":"正答: 5\n1: 粘膜筋板は粘膜と粘膜下層の間にある。\n2: 最も内腔側は粘膜である。\n3: 結腸にも粘膜筋板が存在する。\n4: 内腔側からの順序が逆である。\n5: 資料ではこの順に腸壁の構造が示される。","referencePage":"12,13,14","referenceQuestion":"5","excelRow":15},{"id":"q15","quizNumber":15,"question":"腸管からの静脈還流と肝臓の関係について適切なものを1つ選べ。","choices":["腸から上部直腸までの静脈血は門脈を経て肝臓へ流れる。","腸管の静脈血は下腸間膜動脈を通って肝臓へ流れる。","上部直腸までの静脈血は肝臓を経由しない。","門脈はS状結腸に動脈血を供給する。","門脈に入った栄養素は肝臓に流入しない。"],"answer":1,"answerText":"1. 腸から上部直腸までの静脈血は門脈を経て肝臓へ流れる。","explanation":"正答: 1\n1: 腸管の栄養素を含む静脈血は門脈を通り肝臓に向かう。\n2: 下腸間膜動脈は動脈であり、静脈還流は門脈に合流する。\n3: 上部直腸までの静脈は門脈によって肝臓へ流れる。\n4: S状結腸への動脈血供給は下腸間膜動脈である。\n5: 門脈に入った栄養素は肝臓に運ばれる。","referencePage":"12,13,14","referenceQuestion":"5","excelRow":16},{"id":"q16","quizNumber":16,"question":"マルトースの分解を遅らせ、糖の吸収を抑える薬剤が阻害する標的を1つ選べ。","choices":["DPP-4","胆汁","リパーゼ","ラクターゼ","αグルコシダーゼ"],"answer":5,"answerText":"5. αグルコシダーゼ","explanation":"正答: 5\n1: 資料の解答ではGLP-1の分解に関わることが示される。\n2: 長鎖脂肪酸の吸収過程でミセル形成に関与する。\n3: 脂質の分解に関与する。\n4: 乳糖の消化に関与し、機能低下は乳糖不耐症の原因となる。\n5: マルトースを分解するマルターゼに該当する。","referencePage":"15,16,17","referenceQuestion":"6","excelRow":17},{"id":"q17","quizNumber":17,"question":"牛乳摂取後の乳糖の消化不良について、機能低下が原因となる酵素を1つ選べ。","choices":["胆汁","リパーゼ","αグルコシダーゼ","DPP-4","ラクターゼ"],"answer":5,"answerText":"5. ラクターゼ","explanation":"正答: 5\n1: 長鎖脂肪酸の吸収過程でミセル形成に関与する。\n2: 脂質の分解に関与する。\n3: マルトースを分解するマルターゼに該当する。\n4: 資料の解答ではGLP-1の分解に関わることが示される。\n5: 乳糖の消化に関与し、機能低下は乳糖不耐症の原因となる。","referencePage":"15,16,17","referenceQuestion":"6","excelRow":18},{"id":"q18","quizNumber":18,"question":"長鎖脂肪酸の消化・吸収における役割分担として適切なものを1つ選べ。","choices":["リパーゼがミセルを形成し、胆汁が蛋白質を分解する。","胆汁がマルトースを分解する。","ラクターゼが長鎖脂肪酸を分解する。","長鎖脂肪酸は小腸で中性脂肪へ再合成されない。","リパーゼが脂肪を分解し、胆汁がミセル形成に関与する。"],"answer":5,"answerText":"5. リパーゼが脂肪を分解し、胆汁がミセル形成に関与する。","explanation":"正答: 5\n1: リパーゼは脂肪分解、胆汁はミセル形成に関わる。\n2: マルトースを分解するのはマルターゼである。\n3: ラクターゼは乳糖の消化に関与する。\n4: 長鎖脂肪酸は小腸細胞内で再合成される。\n5: 資料では脂肪分解にリパーゼ、吸収のミセル形成に胆汁が関わる。","referencePage":"15,16,17","referenceQuestion":"6","excelRow":19},{"id":"q19","quizNumber":19,"question":"食物による胃前庭部の刺激に応じて分泌され、胃酸分泌を高めるホルモンを1つ選べ。","choices":["ソマトスタチン","セクレチン","ガストリン","コレシストキニン","モチリン"],"answer":3,"answerText":"3. ガストリン","explanation":"正答: 3\n1: 胃や膵のD細胞から分泌され、胃酸や膵外分泌を抑制する。\n2: 十二指腸のS細胞から分泌され、膵重炭酸塩分泌を促進する。\n3: 胃前庭部のG細胞から分泌され、胃酸分泌を促進する。\n4: 上部小腸のI細胞から分泌され、胆嚢収縮と膵酵素分泌を促進する。\n5: 十二指腸のM細胞から分泌され、空腹時の運動性を促進する。","referencePage":"19,20,21,22","referenceQuestion":"7","excelRow":20},{"id":"q20","quizNumber":20,"question":"上部小腸でアミノ酸や脂肪酸の刺激により分泌され、胆嚢収縮と酵素に富む膵液分泌を促すホルモンを1つ選べ。","choices":["コレシストキニン","ソマトスタチン","ガストリン","モチリン","セクレチン"],"answer":1,"answerText":"1. コレシストキニン","explanation":"正答: 1\n1: 上部小腸のI細胞から分泌され、胆嚢収縮と膵酵素分泌を促進する。\n2: 胃や膵のD細胞から分泌され、胃酸や膵外分泌を抑制する。\n3: 胃前庭部のG細胞から分泌され、胃酸分泌を促進する。\n4: 十二指腸のM細胞から分泌され、空腹時の運動性を促進する。\n5: 十二指腸のS細胞から分泌され、膵重炭酸塩分泌を促進する。","referencePage":"19,20,21,22","referenceQuestion":"7","excelRow":21},{"id":"q21","quizNumber":21,"question":"十二指腸内の酸性化に反応し、重炭酸塩に富む膵液の分泌を促すホルモンを1つ選べ。","choices":["ガストリン","コレシストキニン","セクレチン","モチリン","ソマトスタチン"],"answer":3,"answerText":"3. セクレチン","explanation":"正答: 3\n1: 胃前庭部のG細胞から分泌され、胃酸分泌を促進する。\n2: 上部小腸のI細胞から分泌され、胆嚢収縮と膵酵素分泌を促進する。\n3: 十二指腸のS細胞から分泌され、膵重炭酸塩分泌を促進する。\n4: 十二指腸のM細胞から分泌され、空腹時の運動性を促進する。\n5: 胃や膵のD細胞から分泌され、胃酸や膵外分泌を抑制する。","referencePage":"19,20,21,22","referenceQuestion":"7","excelRow":22},{"id":"q22","quizNumber":22,"question":"胃酸分泌、膵外分泌、胆嚢収縮をいずれも抑えるホルモンを1つ選べ。","choices":["モチリン","ガストリン","グレリン","ソマトスタチン","コレシストキニン"],"answer":4,"answerText":"4. ソマトスタチン","explanation":"正答: 4\n1: 消化管の運動性を促進する。\n2: 胃酸分泌を促進する。\n3: 食欲を促進する。\n4: 胃・膵のD細胞から分泌され、多くの消化管機能を抑制する。\n5: 胆嚢収縮や膵酵素分泌を促進する。","referencePage":"19,20,21,22","referenceQuestion":"8","excelRow":23},{"id":"q23","quizNumber":23,"question":"空腹時の消化管運動に関する説明として適切なものを1つ選べ。","choices":["モチリンは消化管の運動性を促進する。","モチリンは消化管蠕動を抑制する。","ソマトスタチンは消化管運動を促進する。","コレシストキニンは胆嚢を弛緩させる。","ガストリンは胃酸分泌を抑制する。"],"answer":1,"answerText":"1. モチリンは消化管の運動性を促進する。","explanation":"正答: 1\n1: モチリンは十二指腸のM細胞から分泌され、空腹時の運動性を促進する。\n2: 元問題の抑制は促進に訂正されている。\n3: ソマトスタチンは消化管運動を抑制する。\n4: コレシストキニンは胆嚢を収縮させる。\n5: ガストリンは胃酸分泌を促進する。","referencePage":"19,20,21,22","referenceQuestion":"8","excelRow":24},{"id":"q24","quizNumber":24,"question":"消化管ホルモンの分泌細胞との組み合わせとして適切なものを1つ選べ。","choices":["レプチン―主に胃のX/A-like細胞","モチリン―胃前庭部のG細胞","グレリン―主に白色脂肪細胞","ガストリン―十二指腸のM細胞","ソマトスタチン―胃や膵のD細胞"],"answer":5,"answerText":"5. ソマトスタチン―胃や膵のD細胞","explanation":"正答: 5\n1: レプチンは主に白色脂肪細胞から分泌される。\n2: モチリンは十二指腸のM細胞から分泌される。\n3: グレリンは主に胃のX/A-like細胞で産生される。\n4: ガストリンは胃前庭部のG細胞から分泌される。\n5: ソマトスタチンは胃・膵のD細胞から分泌される。","referencePage":"19,20,21,22","referenceQuestion":"8","excelRow":25},{"id":"q25","quizNumber":25,"question":"食欲を高める作用を持つものだけを組み合わせた選択肢を1つ選べ。","choices":["グレリンとコルチゾール","レプチンとコレシストキニン","GLP-1とインスリン","IL-6とTNF-α","セロトニンとレプチン"],"answer":1,"answerText":"1. グレリンとコルチゾール","explanation":"正答: 1\n1: 資料は両者を食欲促進ホルモンとして挙げている。\n2: いずれも食欲を抑制する。\n3: 資料ではいずれも食欲抑制側に分類されている。\n4: 炎症性サイトカインで、食欲は低下する。\n5: いずれも食欲を抑制する。","referencePage":"19,21,22","referenceQuestion":"9","excelRow":26},{"id":"q26","quizNumber":26,"question":"食前に血中濃度が高まり、主に胃で産生される食欲促進物質を1つ選べ。","choices":["IL-6","コレシストキニン","グレリン","TNF-α","レプチン"],"answer":3,"answerText":"3. グレリン","explanation":"正答: 3\n1: 炎症性サイトカインで、食欲を促進しない。\n2: 上部小腸から分泌され、食欲抑制側に分類される。\n3: 胃のX/A-like細胞で産生され、食前に血中濃度が上昇する。\n4: 炎症性サイトカインで、食欲を低下させる。\n5: 主に白色脂肪細胞から分泌され、摂食を抑制する。","referencePage":"19,21,22","referenceQuestion":"9","excelRow":27},{"id":"q27","quizNumber":27,"question":"炎症と食欲の関係について適切なものを1つ選べ。","choices":["IL-6はコルチゾールと同じく食欲を促進する。","レプチンはグレリンと同方向に摂食を促す。","TNF-αは摂食を増やす炎症性サイトカインである。","IL-6やTNF-αは食欲低下に関わる。","セロトニンは食欲促進側に分類される。"],"answer":4,"answerText":"4. IL-6やTNF-αは食欲低下に関わる。","explanation":"正答: 4\n1: IL-6は食欲を促進しない。\n2: レプチンは摂食を抑制し、グレリンは促進する。\n3: TNF-αは食欲低下に関わる。\n4: 両者は炎症性サイトカインで、食欲を亢進させず低下させる。\n5: 資料はセロトニンを食欲抑制物質と説明している。","referencePage":"19,21,22","referenceQuestion":"9","excelRow":28},{"id":"q28","quizNumber":28,"question":"成人の体液区分の比率として適切なものを1つ選べ。","choices":["細胞内液:細胞外液=2:1","細胞内液:細胞外液=1:1","細胞内液:細胞外液=1:2","体内水分は体重の約40%だけである。","間質液:血管内液=1:3"],"answer":1,"answerText":"1. 細胞内液:細胞外液=2:1","explanation":"正答: 1\n1: 成人では細胞内液40%、細胞外液20%が目安である。\n2: 両者は等量ではなく2:1である。\n3: 細胞内液の方が多く、2:1である。\n4: 成人の総水分は体重の約60%である。\n5: 細胞外液は間質液15%、血管内液5%で約3:1である。","referencePage":"24,25,26,27","referenceQuestion":"10","excelRow":29},{"id":"q29","quizNumber":29,"question":"細胞内外の主要な陽イオンの組み合わせを1つ選べ。","choices":["細胞内の主な陽イオンはクロール","細胞内はナトリウム、細胞外はカリウム","細胞内はカリウム、細胞外はナトリウム","細胞内も細胞外もナトリウム","細胞内も細胞外もカリウム"],"answer":3,"answerText":"3. 細胞内はカリウム、細胞外はナトリウム","explanation":"正答: 3\n1: クロールは陽イオンではなく、細胞内の主な陽イオンはKである。\n2: 細胞内外の主な陽イオンが逆である。\n3: 細胞内液ではK、細胞外液ではNaが主な陽イオンである。\n4: 細胞内液の主な陽イオンはKである。\n5: 細胞外液の主な陽イオンはNaである。","referencePage":"24,25,26,27","referenceQuestion":"10","excelRow":30},{"id":"q30","quizNumber":30,"question":"間質液と血管内の水分移動に関する説明として適切なものを1つ選べ。","choices":["血管壁では水の移動が全く起きない。","ナトリウムとカリウムは細胞膜を水と同様に自由に移動する。","細胞膜の水移動には必ずイオンポンプが必要である。","アルブミンは自由に移動しにくく、血管内の浸透圧に関与する。","アルブミンは血管外には全く存在しない。"],"answer":4,"answerText":"4. アルブミンは自由に移動しにくく、血管内の浸透圧に関与する。","explanation":"正答: 4\n1: 水は間質と血管内の間を移動する。\n2: 細胞内外のイオン分布は膜のポンプで維持される。\n3: 水は細胞膜を自由に移動し、電解質はポンプで調節される。\n4: 水やイオンに比べ蛋白質は自由移動しにくく、膠質浸透圧を形成する。\n5: 血管外の細胞外液にもアルブミンは含まれる。","referencePage":"24,25,26,27","referenceQuestion":"10","excelRow":31},{"id":"q31","quizNumber":31,"question":"発汗を伴わない安静時にも生じる水分喪失について適切なものを1つ選べ。","choices":["呼吸による水分喪失は不感蒸泄に含めない。","不感蒸泄は尿中への水分排泄だけを指す。","皮膚・粘膜・呼気からの不感蒸泄がある。","不感蒸泄は発汗量と常に同じである。","発汗がなければ水分は全く失われない。"],"answer":3,"answerText":"3. 皮膚・粘膜・呼気からの不感蒸泄がある。","explanation":"正答: 3\n1: 呼気からの水分喪失も含まれる。\n2: 尿とは区別され、皮膚・粘膜・呼気からの喪失を指す。\n3: 不感蒸泄は無意識に皮膚・粘膜・呼気から失われる水分である。\n4: 発汗とは異なり、病状や環境によって変化する。\n5: 不感蒸泄は発汗がなくても起きる。","referencePage":"28,29,30","referenceQuestion":"11","excelRow":32},{"id":"q32","quizNumber":32,"question":"不感蒸泄を増加させる条件の組み合わせを1つ選べ。","choices":["湿度上昇と熱傷による不感蒸泄の減少","体温上昇による不感蒸泄の減少","過換気による水分喪失の消失","発熱・熱傷による不感蒸泄の減少","発熱・広範囲の熱傷・過換気"],"answer":5,"answerText":"5. 発熱・広範囲の熱傷・過換気","explanation":"正答: 5\n1: 熱傷では増加し、湿度は低い方が喪失が大きい。\n2: 体温1℃上昇で約15%増加する。\n3: 過換気は不感蒸泄を増加させる。\n4: 発熱も熱傷も不感蒸泄を増加させる。\n5: 資料ではこれらの条件で不感蒸泄が増加すると説明されている。","referencePage":"28,29,30","referenceQuestion":"11","excelRow":33},{"id":"q33","quizNumber":33,"question":"体重60kg、体温36.8℃の成人について、資料の式「体重×15+(体温-36.8)×200」で求める1日の不感蒸泄量を1つ選べ。","choices":["200mL","600mL","1,800mL","0mL","900mL"],"answer":5,"answerText":"5. 900mL","explanation":"正答: 5\n1: 200は体温補正の係数であり、体重項900mLを含める。\n2: 資料の式では60×15=900mLとなる。\n3: 体温36.8℃では補正項が0なので900mLである。\n4: 基準体温でも体重×15の不感蒸泄がある。\n5: 60×15+(36.8-36.8)×200=900mLとなる。","referencePage":"28,29,30","referenceQuestion":"11","excelRow":34},{"id":"q34","quizNumber":34,"question":"カリウムの細胞内外への移動について適切なものを1つ選べ。","choices":["細胞外への移動は血清カリウムを低下させる。","インスリンはカリウムを細胞内へ移動させる。","アルカローシスではカリウムが細胞外へ移動する。","体内カリウムの大部分は細胞外にある。","インスリンはカリウムを細胞外へ移動させる。"],"answer":2,"answerText":"2. インスリンはカリウムを細胞内へ移動させる。","explanation":"正答: 2\n1: 細胞外への移動は血清Kを上昇させる。\n2: インスリンは血清Kを低下させ、GI療法にも利用される。\n3: アルカローシスでは細胞内へ移動し、低Kをきたしやすい。\n4: 体内Kの約98%は細胞内に分布する。\n5: インスリンによる移動方向は細胞内である。","referencePage":"31,32,33,34","referenceQuestion":"12","excelRow":35},{"id":"q35","quizNumber":35,"question":"高カリウム血症の原因を、排泄低下・投与・検査の観点から説明したものとして適切なものを1つ選べ。","choices":["腎機能低下、大量輸血、採血時の溶血が関係しうる。","嘔吐によるカリウム喪失が必ず高値を生む。","アルカローシスでは必ず高値になる。","下痢によるカリウム喪失が主な原因となる。","インスリン投与による細胞内移動が原因となる。"],"answer":1,"answerText":"1. 腎機能低下、大量輸血、採血時の溶血が関係しうる。","explanation":"正答: 1\n1: 腎排泄低下、保存血のK、採血溶血による偽性高Kが説明されている。\n2: 嘔吐ではK喪失により低Kをきたしやすい。\n3: アルカローシスは低Kをきたしやすい。\n4: 下痢ではKを失い、低Kをきたしやすい。\n5: 細胞内移動は血清Kを低下させる。","referencePage":"31,32,33,34","referenceQuestion":"12","excelRow":36},{"id":"q36","quizNumber":36,"question":"溶血の影響を受けた検体でカリウム高値が得られた場合の解釈として適切なものを1つ選べ。","choices":["溶血の有無に関わらず測定値は必ず体内の実態を表す。","赤血球にはカリウムが含まれていない。","赤血球内のカリウムが流出し、偽性高値となることがある。","採血条件はカリウム測定値に影響しない。","溶血は血清カリウムを必ず低下させる。"],"answer":3,"answerText":"3. 赤血球内のカリウムが流出し、偽性高値となることがある。","explanation":"正答: 3\n1: 偽性高Kがあり、測定値だけで実態を決められない。\n2: 赤血球内には多量のKが含まれる。\n3: 採血・検体処理による溶血は偽性高Kの原因となる。\n4: 採血・検体処理の条件により偽性高Kを生じる。\n5: 赤血球内のKの流出は測定値を上げる。","referencePage":"31,32,33,34","referenceQuestion":"12","excelRow":37},{"id":"q37","quizNumber":37,"question":"解糖系と糖新生の関係について適切なものを1つ選べ。","choices":["糖新生では解糖系の全反応をそのまま逆行する。","糖新生の原料にグリセロールは利用されない。","解糖系は細胞内で進行しない。","解糖系はピルビン酸生成まで酸素を必須とする。","糖新生は解糖系を単純に逆向きにたどる経路ではない。"],"answer":5,"answerText":"5. 糖新生は解糖系を単純に逆向きにたどる経路ではない。","explanation":"正答: 5\n1: 不可逆反応は別経路で迂回する。\n2: グリセロールは糖新生の原料として挙げられている。\n3: 解糖系は細胞内で進行する。\n4: ピルビン酸までの解糖は酸素を必要としない。\n5: 解糖系の不可逆反応は、糖新生では別の酵素・経路で進む。","referencePage":"35,36","referenceQuestion":"13","excelRow":38},{"id":"q38","quizNumber":38,"question":"肝臓と筋肉のグリコーゲンの役割の比較として適切なものを1つ選べ。","choices":["筋肉ではグリコーゲンを利用せず全て血中に放出する。","肝臓は血糖維持、筋肉はその筋のエネルギー供給に利用する。","筋グリコーゲンは主に血糖を維持する。","肝グリコーゲンは血糖維持に関与しない。","全身で最大のグリコーゲンプールは肝臓である。"],"answer":2,"answerText":"2. 肝臓は血糖維持、筋肉はその筋のエネルギー供給に利用する。","explanation":"正答: 2\n1: 筋グリコーゲンはその筋のエネルギー源として用いられる。\n2: 肝グリコーゲンは血中へグルコースを供給し、筋では筋内で消費する。\n3: 血糖維持の役割は肝グリコーゲンにある。\n4: 肝臓はグリコーゲン由来グルコースを血中へ供給する。\n5: 総量では筋肉のグリコーゲンが肝臓より多い。","referencePage":"35,36","referenceQuestion":"13","excelRow":39},{"id":"q39","quizNumber":39,"question":"糖新生の原料として資料に挙げられたものだけの組み合わせを1つ選べ。","choices":["乳酸だけで、アラニンは利用されない。","この3つはいずれも糖新生の原料にならない。","アラニンだけで、グリセロールは利用されない。","乳酸・アラニン・グリセロール","グリセロールだけで、乳酸は利用されない。"],"answer":4,"answerText":"4. 乳酸・アラニン・グリセロール","explanation":"正答: 4\n1: アラニンも原料として利用される。\n2: いずれも資料に示された糖新生の原料である。\n3: グリセロールも原料として利用される。\n4: この3つは糖新生の原料として示される。\n5: 乳酸も原料として利用される。","referencePage":"35,36","referenceQuestion":"13","excelRow":40},{"id":"q40","quizNumber":40,"question":"ケトン体の産生に関する組み合わせとして適切なものを1つ選べ。","choices":["解糖系の逆行―筋細胞","脂肪酸のβ酸化亢進―肝臓以外だけ","グリコーゲン分解―心臓","Cori回路―心臓","脂肪酸のβ酸化亢進―肝ミトコンドリア"],"answer":5,"answerText":"5. 脂肪酸のβ酸化亢進―肝ミトコンドリア","explanation":"正答: 5\n1: ケトン体の産生は単純な解糖系の逆行ではない。\n2: ケトン体の産生部位は肝臓である。\n3: ケトン体は肝臓で脂肪酸由来のアセチルCoAから産生される。\n4: Cori回路は筋などの乳酸と肝臓の糖新生を結ぶ経路である。\n5: 脂肪酸のβ酸化が亢進した際、肝ミトコンドリアでケトン体が生成される。","referencePage":"38,39,40","referenceQuestion":"14","excelRow":41},{"id":"q41","quizNumber":41,"question":"肝臓が産生したケトン体の利用について適切なものを1つ選べ。","choices":["血液脳関門を通過できない。","脳へ移行でき、筋肉や腎臓でも利用される。","腎臓ではケトン体を利用できない。","産生した肝臓が主な利用臓器となる。","筋肉ではケトン体を利用できない。"],"answer":2,"answerText":"2. 脳へ移行でき、筋肉や腎臓でも利用される。","explanation":"正答: 2\n1: 脳のエネルギー源として利用されるため、血液脳関門を通過する。\n2: ケトン体は血液脳関門を通過し、肝外組織で利用される。\n3: 腎臓もケトン体を利用する組織として挙げられる。\n4: 肝臓にはCoAトランスフェラーゼがなく、ケトン体を代謝できない。\n5: 筋肉にはケトン体を代謝する酵素がある。","referencePage":"38,39,40","referenceQuestion":"14","excelRow":42},{"id":"q42","quizNumber":42,"question":"Cori回路を構成する流れとして適切なものを1つ選べ。","choices":["筋のグリコーゲンがそのまま肝臓へ運ばれる。","筋などで生じた乳酸が肝臓でグルコースに再合成される。","乳酸は再利用されず全て排泄される。","肝臓のケトン体が乳酸として筋へ運ばれる。","肝臓がケトン体を分解して乳酸を作る。"],"answer":2,"answerText":"2. 筋などで生じた乳酸が肝臓でグルコースに再合成される。","explanation":"正答: 2\n1: 循環するのは乳酸やグルコースである。\n2: 筋などの乳酸を肝臓が取り込み、糖新生でグルコースを供給する。\n3: 乳酸は肝臓で糖新生に利用される。\n4: Cori回路は乳酸とグルコースの循環である。\n5: 肝臓ではケトン体を代謝できない。","referencePage":"38,39,40","referenceQuestion":"14","excelRow":43},{"id":"q43","quizNumber":43,"question":"必須アミノ酸であり、かつ芳香族に分類されるものを1つ選べ。","choices":["グリシン","フェニルアラニン","アラニン","チロシン","メチオニン"],"answer":2,"answerText":"2. フェニルアラニン","explanation":"正答: 2\n1: 非必須アミノ酸で、条件付き必須アミノ酸にも分類される。\n2: 必須アミノ酸で、芳香族アミノ酸にも分類される。\n3: 非必須アミノ酸である。\n4: 非必須・条件付き必須で、芳香族アミノ酸である。\n5: 必須アミノ酸で、含硫アミノ酸である。","referencePage":"41,42,43","referenceQuestion":"15","excelRow":44},{"id":"q44","quizNumber":44,"question":"体内で合成される非必須アミノ酸で、芳香族にも分類されるものを1つ選べ。","choices":["チロシン","グリシン","メチオニン","アラニン","フェニルアラニン"],"answer":1,"answerText":"1. チロシン","explanation":"正答: 1\n1: 非必須・条件付き必須で、芳香族アミノ酸である。\n2: 非必須アミノ酸で、条件付き必須アミノ酸にも分類される。\n3: 必須アミノ酸で、含硫アミノ酸である。\n4: 非必須アミノ酸である。\n5: 必須アミノ酸で、芳香族アミノ酸にも分類される。","referencePage":"41,42,43","referenceQuestion":"15","excelRow":45},{"id":"q45","quizNumber":45,"question":"必須アミノ酸のうち、硫黄を含む構造を持つものを1つ選べ。","choices":["アラニン","フェニルアラニン","メチオニン","チロシン","グリシン"],"answer":3,"answerText":"3. メチオニン","explanation":"正答: 3\n1: 非必須アミノ酸である。\n2: 必須アミノ酸で、芳香族アミノ酸にも分類される。\n3: 必須アミノ酸で、含硫アミノ酸である。\n4: 非必須・条件付き必須で、芳香族アミノ酸である。\n5: 非必須アミノ酸で、条件付き必須アミノ酸にも分類される。","referencePage":"41,42,43","referenceQuestion":"15","excelRow":46},{"id":"q46","quizNumber":46,"question":"分岐鎖アミノ酸だけを含む組み合わせを1つ選べ。","choices":["イソロイシン・アラニン・アルギニン","フェニルアラニン・トリプトファン・チロシン","バリン・ロイシン・グルタミン酸","バリン・ロイシン・イソロイシン","メチオニン・システイン・チロシン"],"answer":4,"answerText":"4. バリン・ロイシン・イソロイシン","explanation":"正答: 4\n1: アラニンとアルギニンは分岐鎖アミノ酸ではない。\n2: これらは芳香族アミノ酸である。\n3: グルタミン酸は分岐鎖アミノ酸ではない。\n4: この3種類が分岐鎖アミノ酸である。\n5: メチオニンとシステインは含硫、チロシンは芳香族である。","referencePage":"41,42,43","referenceQuestion":"16","excelRow":47},{"id":"q47","quizNumber":47,"question":"分岐鎖アミノ酸と芳香族アミノ酸の主な代謝部位の比較として適切なものを1つ選べ。","choices":["両者とも主に骨格筋だけで代謝される。","分岐鎖アミノ酸は骨格筋で利用されない。","分岐鎖は主に肝臓、芳香族は主に骨格筋で代謝される。","分岐鎖は主に骨格筋、芳香族は主に肝臓で代謝される。","両者とも主に肝臓だけで代謝される。"],"answer":4,"answerText":"4. 分岐鎖は主に骨格筋、芳香族は主に肝臓で代謝される。","explanation":"正答: 4\n1: 芳香族アミノ酸は主に肝臓で代謝される。\n2: 骨格筋内に多く存在し、筋で代謝される。\n3: 主な代謝部位が逆である。\n4: 資料は分岐鎖アミノ酸が筋内、芳香族が主に肝臓で代謝されると説明する。\n5: 分岐鎖アミノ酸は主に骨格筋で代謝される。","referencePage":"41,42,43","referenceQuestion":"16","excelRow":48},{"id":"q48","quizNumber":48,"question":"骨格筋の蛋白合成のシグナルとしての役割が示されているアミノ酸を1つ選べ。","choices":["フェニルアラニン","チロシン","トリプトファン","ロイシン","メチオニン"],"answer":4,"answerText":"4. ロイシン","explanation":"正答: 4\n1: 芳香族アミノ酸で、主に肝臓で代謝される。\n2: 芳香族アミノ酸に分類される。\n3: 芳香族アミノ酸に分類される。\n4: ロイシンは筋蛋白合成のシグナルとして働く。\n5: 含硫アミノ酸に分類される。","referencePage":"41,42,43","referenceQuestion":"16","excelRow":49},{"id":"q49","quizNumber":49,"question":"しそ油や亜麻仁油に多く含まれるn-3系の脂肪酸を1つ選べ。","choices":["パルミチン酸","リノール酸","αリノレン酸","ステアリン酸","オレイン酸"],"answer":3,"answerText":"3. αリノレン酸","explanation":"正答: 3\n1: 飽和脂肪酸である。\n2: n-6系多価不飽和脂肪酸で、大豆油やコーン油に多い。\n3: n-3系多価不飽和脂肪酸で、しそ油や亜麻仁油に多い。\n4: 飽和脂肪酸である。\n5: n-9系一価不飽和脂肪酸である。","referencePage":"44,45,46","referenceQuestion":"17","excelRow":50},{"id":"q50","quizNumber":50,"question":"大豆油やコーン油に多く含まれるn-6系の脂肪酸を1つ選べ。","choices":["リノール酸","ステアリン酸","パルミチン酸","オレイン酸","αリノレン酸"],"answer":1,"answerText":"1. リノール酸","explanation":"正答: 1\n1: n-6系多価不飽和脂肪酸で、大豆油やコーン油に多い。\n2: 飽和脂肪酸である。\n3: 飽和脂肪酸である。\n4: n-9系一価不飽和脂肪酸である。\n5: n-3系多価不飽和脂肪酸で、しそ油や亜麻仁油に多い。","referencePage":"44,45,46","referenceQuestion":"17","excelRow":51},{"id":"q51","quizNumber":51,"question":"二重結合が1個で、n-9系に分類される脂肪酸を1つ選べ。","choices":["ステアリン酸","オレイン酸","αリノレン酸","パルミチン酸","リノール酸"],"answer":2,"answerText":"2. オレイン酸","explanation":"正答: 2\n1: 飽和脂肪酸である。\n2: n-9系一価不飽和脂肪酸である。\n3: n-3系多価不飽和脂肪酸で、しそ油や亜麻仁油に多い。\n4: 飽和脂肪酸である。\n5: n-6系多価不飽和脂肪酸で、大豆油やコーン油に多い。","referencePage":"44,45,46","referenceQuestion":"17","excelRow":52},{"id":"q52","quizNumber":52,"question":"脂肪酸分解でエネルギーを得る経路として適切なものを1つ選べ。","choices":["細胞質で脂肪酸を直接全て水と二酸化炭素にする。","ミトコンドリアのβ酸化でアセチルCoAを生成し、TCA回路へ入る。","肝臓の細胞質でβ酸化を行う。","β酸化を逆向きに進めてATPを産生する。","脂肪酸を分解せずにそのままTCA回路へ入れる。"],"answer":2,"answerText":"2. ミトコンドリアのβ酸化でアセチルCoAを生成し、TCA回路へ入る。","explanation":"正答: 2\n1: β酸化はミトコンドリアでアセチルCoAへ変換する過程である。\n2: β酸化はミトコンドリアで進み、アセチルCoAを生成する。\n3: 脂肪酸合成は細胞質で、β酸化はミトコンドリアで行われる。\n4: 逆向きの反応がエネルギー産生のβ酸化ではない。\n5: β酸化でアセチルCoAに変換してからTCA回路へ入る。","referencePage":"44,46,47,48","referenceQuestion":"18","excelRow":53},{"id":"q53","quizNumber":53,"question":"脂肪酸合成と分解の比較として適切なものを1つ選べ。","choices":["脂肪酸合成はβ酸化をそのまま逆向きにたどる。","合成も分解も全て肝細胞の細胞質で行う。","オレイン酸は体内で合成できない必須脂肪酸である。","合成は主に肝臓の細胞質で行われ、β酸化の単純な逆行ではない。","多価不飽和脂肪酸は全てパルミチン酸から合成できる。"],"answer":4,"answerText":"4. 合成は主に肝臓の細胞質で行われ、β酸化の単純な逆行ではない。","explanation":"正答: 4\n1: 資料はβ酸化の逆行ではないと説明する。\n2: β酸化はミトコンドリアで行われる。\n3: オレイン酸は必須脂肪酸ではない。\n4: 脂肪酸合成は細胞質でクエン酸を経由して進む。\n5: 必須の多価不飽和脂肪酸は体内で合成できない。","referencePage":"44,46,47,48","referenceQuestion":"18","excelRow":54},{"id":"q54","quizNumber":54,"question":"長鎖脂肪酸と中鎖脂肪酸のβ酸化に関する比較として適切なものを1つ選べ。","choices":["中鎖脂肪酸はβ酸化されない。","両者とも必ずカルニチンを必要とする。","中鎖脂肪酸だけがカルニチンを必要とする。","長鎖脂肪酸はミトコンドリアで代謝されない。","長鎖脂肪酸のミトコンドリア移行にはカルニチンが必要である。"],"answer":5,"answerText":"5. 長鎖脂肪酸のミトコンドリア移行にはカルニチンが必要である。","explanation":"正答: 5\n1: 中鎖脂肪酸は速やかにβ酸化される。\n2: 中鎖脂肪酸には不要である。\n3: 中鎖脂肪酸はカルニチンなしで速やかにβ酸化される。\n4: 長鎖脂肪酸もミトコンドリアでβ酸化される。\n5: 長鎖脂肪酸はカルニチンと結合して膜を通過する。","referencePage":"44,46,47,48","referenceQuestion":"18","excelRow":55},{"id":"q55","quizNumber":55,"question":"中鎖脂肪酸をエネルギーとして利用する過程で、長鎖脂肪酸と異なる特徴を1つ選べ。","choices":["小腸での中性脂肪への再合成が必須である。","吸収後は全てリンパ管を経由する。","必ずカイロミクロンに組み込まれる。","ミセル形成が利用の必須条件である。","カイロミクロンを形成せず、吸収後に門脈へ入る。"],"answer":5,"answerText":"5. カイロミクロンを形成せず、吸収後に門脈へ入る。","explanation":"正答: 5\n1: 中鎖脂肪酸は再合成を要せず利用される。\n2: 中鎖脂肪酸は直接門脈へ入る。\n3: 中鎖脂肪酸はカイロミクロンを形成しない。\n4: 中鎖脂肪酸にはミセル形成が不要である。\n5: 中鎖脂肪酸は直接門脈へ入り、長鎖のようなリンパ経路を必要としない。","referencePage":"44,46,48","referenceQuestion":"19","excelRow":56},{"id":"q56","quizNumber":56,"question":"MCTの投与目的として適切なものを1つ選べ。","choices":["大豆油の主成分を補充する。","脂質であるがエネルギーを供給しない。","吸収・酸化されやすいエネルギー源として用いる。","必須脂肪酸の補充だけを目的とする。","カルニチンを必須として脂肪酸酸化を遅らせる。"],"answer":3,"answerText":"3. 吸収・酸化されやすいエネルギー源として用いる。","explanation":"正答: 3\n1: 資料はMCTの供給源としてココナツ油などを挙げる。\n2: MCTは1g当たり約8kcalのエネルギーを供給する。\n3: MCTは吸収されやすく、速やかにβ酸化を受けるエネルギー源となる。\n4: MCTは必須脂肪酸ではなく、その補充目的には用いない。\n5: 中鎖脂肪酸はカルニチンを必要とせず、速やかに酸化される。","referencePage":"44,46,48","referenceQuestion":"19","excelRow":57},{"id":"q57","quizNumber":57,"question":"資料に示されたMCTの供給源とエネルギーの組み合わせとして適切なものを1つ選べ。","choices":["ココナツ油など―約4kcal/g","ココナツ油など―約8kcal/g","ココナツ油など―カルニチン依存性のMCT","大豆油―約4kcal/g","大豆油―必須脂肪酸補充用のMCT"],"answer":2,"answerText":"2. ココナツ油など―約8kcal/g","explanation":"正答: 2\n1: MCTのエネルギーは約8kcal/gである。\n2: MCTはココナツ油などに含まれ、1g当たり約8kcalである。\n3: MCTは代謝にカルニチンを必要としない。\n4: 大豆油に多いのはn-6系長鎖脂肪酸で、MCTは約8kcal/gである。\n5: MCTは必須脂肪酸の補充には用いられない。","referencePage":"44,46,48","referenceQuestion":"19","excelRow":58},{"id":"q58","quizNumber":58,"question":"長期飢餓と侵襲時の変化の比較として適切なものを1つ選べ。","choices":["長期飢餓では代謝が低下し、侵襲時には亢進する。","長期飢餓でケトン体は利用されない。","侵襲時には蛋白異化が抑制される。","両者とも代謝が亢進する。","両者とも窒素バランスが上昇する。"],"answer":1,"answerText":"1. 長期飢餓では代謝が低下し、侵襲時には亢進する。","explanation":"正答: 1\n1: 長期飢餓はエネルギー消費を抑え、侵襲時は代謝が亢進する。\n2: 長期飢餓ではケトン体利用が重要となる。\n3: 侵襲時には蛋白異化が亢進する。\n4: 長期飢餓では代謝が低下する。\n5: 長期飢餓でも侵襲時でも窒素バランスは低下する。","referencePage":"50,51,52,53,54","referenceQuestion":"20","excelRow":59},{"id":"q59","quizNumber":59,"question":"侵襲に伴う内分泌・代謝反応について適切なものを1つ選べ。","choices":["炎症性サイトカインは反応に関与しない。","窒素バランスは常に正となる。","全ての病期を通じて蛋白同化だけが続く。","筋蛋白の分解は全く起こらない。","インスリン抵抗性を伴う高血糖が起こりうる。"],"answer":5,"answerText":"5. インスリン抵抗性を伴う高血糖が起こりうる。","explanation":"正答: 5\n1: 免疫系のサイトカインも侵襲反応の構成要素である。\n2: 蛋白異化によって窒素バランスは低下する。\n3: 初期には異化が亢進し、回復時に同化期へ移る。\n4: 侵襲時には筋蛋白の分解が亢進する。\n5: 侵襲時には糖代謝を変えるホルモン分泌やインスリン抵抗性がみられる。","referencePage":"50,51,52,53,54","referenceQuestion":"20","excelRow":60},{"id":"q60","quizNumber":60,"question":"侵襲後の最早期に体液減少性ショックなどを伴う干潮期の特徴を1つ選べ。","choices":["余剰カロリーを脂肪として蓄積する。","心拍出量・酸素消費量・血圧・代謝が低下する。","蛋白同化が中心で創傷治癒が進む。","代謝は重症熱傷の満潮期と同程度に亢進する。","循環不全でも体液を保持する必要がない。"],"answer":2,"answerText":"2. 心拍出量・酸素消費量・血圧・代謝が低下する。","explanation":"正答: 2\n1: 脂肪蓄積は回復後の脂肪合成期の特徴である。\n2: 干潮期では循環不全に伴い、これらの指標が低下する。\n3: 蛋白同化は後の同化期の特徴である。\n4: 干潮期は代謝低下、満潮期は亢進が特徴である。\n5: 干潮期の恒常性維持では体液保持が重要である。","referencePage":"50,51,52,53,54","referenceQuestion":"20","excelRow":61},{"id":"q61","quizNumber":61,"question":"結腸で食物繊維から生じる代謝産物の働きとして適切なものを1つ選べ。","choices":["発酵はヒトの消化酵素だけで行われる。","結腸粘膜は発酵産物を利用できない。","長鎖脂肪酸となり、全て便へ排泄される。","短鎖脂肪酸となり、結腸粘膜のエネルギー源となる。","食物繊維はヒトの消化酵素で完全に分解される。"],"answer":4,"answerText":"4. 短鎖脂肪酸となり、結腸粘膜のエネルギー源となる。","explanation":"正答: 4\n1: 発酵には腸内細菌が関わる。\n2: 短鎖脂肪酸は粘膜のエネルギー源となる。\n3: 資料が挙げる産物は吸収される短鎖脂肪酸である。\n4: 腸内細菌の発酵で生じる短鎖脂肪酸は結腸粘膜に利用される。\n5: ヒトの消化酵素では消化されない。","referencePage":"55,57","referenceQuestion":"21","excelRow":62},{"id":"q62","quizNumber":62,"question":"水溶性食物繊維の作用として適切なものを1つ選べ。","choices":["発酵で生じた短鎖脂肪酸は吸収されない。","ヒトの酵素による消化が前提である。","腸内細菌による発酵は起こらない。","水を保持する作用はない。","便の水分量を維持し、過剰な水分吸収を防ぐ。"],"answer":5,"answerText":"5. 便の水分量を維持し、過剰な水分吸収を防ぐ。","explanation":"正答: 5\n1: 短鎖脂肪酸は結腸で吸収される。\n2: 食物繊維はヒトの消化酵素で消化されない。\n3: 腸内細菌によって発酵される。\n4: 水溶性食物繊維は保水性を有する。\n5: 水溶性食物繊維は便中の水分を保ち、便を柔らかくする。","referencePage":"55,57","referenceQuestion":"21","excelRow":63},{"id":"q63","quizNumber":63,"question":"不溶性食物繊維について適切な説明を1つ選べ。","choices":["便の量を増やす作用がある。","ヒトの消化酵素で糖として完全に吸収される。","短鎖脂肪酸は食物繊維と無関係に生じる。","便量を減らすことが主な作用である。","結腸粘膜へのエネルギー供給に発酵は関係しない。"],"answer":1,"answerText":"1. 便の量を増やす作用がある。","explanation":"正答: 1\n1: 不溶性食物繊維は便量の増加に関与する。\n2: 食物繊維はヒトの消化酵素で消化されない。\n3: 食物繊維の発酵は短鎖脂肪酸の供給源となる。\n4: 資料では便量増加が説明されている。\n5: 腸内細菌の発酵による短鎖脂肪酸が粘膜に利用される。","referencePage":"55,57","referenceQuestion":"21","excelRow":64},{"id":"q64","quizNumber":64,"question":"水溶性食物繊維だけで構成された組み合わせを1つ選べ。","choices":["ペクチン、グアーガム、アルギン酸","アルギン酸、リグニン、キチン","グアーガム、キチン、キトサン","ペクチン、セルロース、リグニン","セルロース、リグニン、キチン"],"answer":1,"answerText":"1. ペクチン、グアーガム、アルギン酸","explanation":"正答: 1\n1: いずれも資料で水溶性に分類されている。\n2: リグニンとキチンは不溶性である。\n3: キチンとキトサンは不溶性である。\n4: セルロースとリグニンは不溶性である。\n5: いずれも不溶性に分類されている。","referencePage":"55,57","referenceQuestion":"22","excelRow":65},{"id":"q65","quizNumber":65,"question":"食物繊維の分類として適切なものを1つ選べ。","choices":["グルコマンナンは水溶性に分類される。","βグルカンは不溶性である。","セルロースは水溶性である。","リグニンは水溶性である。","ペクチンは不溶性である。"],"answer":1,"answerText":"1. グルコマンナンは水溶性に分類される。","explanation":"正答: 1\n1: グルコマンナンは資料の水溶性食物繊維に含まれる。\n2: 資料ではβグルカンを水溶性に分類している。\n3: セルロースは不溶性である。\n4: リグニンは不溶性である。\n5: ペクチンは水溶性である。","referencePage":"55,57","referenceQuestion":"22","excelRow":66},{"id":"q66","quizNumber":66,"question":"キチン・キトサンと同じ不溶性の群に含まれるものを1つ選べ。","choices":["グアーガム","グルコマンナン","セルロース","アルギン酸","ペクチン"],"answer":3,"answerText":"3. セルロース","explanation":"正答: 3\n1: グアーガムは水溶性である。\n2: グルコマンナンは水溶性である。\n3: セルロースはキチン・キトサンと同じ不溶性の群である。\n4: アルギン酸は水溶性である。\n5: ペクチンは水溶性である。","referencePage":"55,57","referenceQuestion":"22","excelRow":67},{"id":"q67","quizNumber":67,"question":"皮膚炎と味覚障害を伴う微量元素欠乏を考える場合、該当する元素を1つ選べ。","choices":["亜鉛","セレン","鉄","ヨウ素","銅"],"answer":1,"answerText":"1. 亜鉛","explanation":"正答: 1\n1: 欠乏では皮膚炎、免疫低下、味覚障害がみられる。\n2: 欠乏では心筋障害や爪の変化がみられる。\n3: 欠乏では小球性貧血がみられる。\n4: 欠乏は甲状腺機能の障害に関わる。\n5: 欠乏では貧血や白血球減少がみられる。","referencePage":"58,59,60","referenceQuestion":"23","excelRow":68},{"id":"q68","quizNumber":68,"question":"微量元素不足に伴う心筋障害と爪の変化に関連する元素を1つ選べ。","choices":["セレン","ヨウ素","鉄","亜鉛","銅"],"answer":1,"answerText":"1. セレン","explanation":"正答: 1\n1: 欠乏では心筋障害や爪の変化がみられる。\n2: 欠乏は甲状腺機能の障害に関わる。\n3: 欠乏では小球性貧血がみられる。\n4: 欠乏では皮膚炎、免疫低下、味覚障害がみられる。\n5: 欠乏では貧血や白血球減少がみられる。","referencePage":"58,59,60","referenceQuestion":"23","excelRow":69},{"id":"q69","quizNumber":69,"question":"欠乏によって貧血と白血球減少を生じる微量元素を1つ選べ。","choices":["鉄","セレン","ヨウ素","銅","亜鉛"],"answer":4,"answerText":"4. 銅","explanation":"正答: 4\n1: 欠乏では小球性貧血がみられる。\n2: 欠乏では心筋障害や爪の変化がみられる。\n3: 欠乏は甲状腺機能の障害に関わる。\n4: 欠乏では貧血や白血球減少がみられる。\n5: 欠乏では皮膚炎、免疫低下、味覚障害がみられる。","referencePage":"58,59,60","referenceQuestion":"23","excelRow":70},{"id":"q70","quizNumber":70,"question":"胆汁うっ滞時の微量元素投与で注意すべき排泄経路を1つ選べ。","choices":["亜鉛を過剰投与しても銅吸収は変化しない。","亜鉛欠乏は必ず静脈栄養開始2年後に発症する。","セレン欠乏では爪の変化は起こらない。","銅は主に胆汁を介して排泄される。","銅は胆汁排泄に関係しない。"],"answer":4,"answerText":"4. 銅は主に胆汁を介して排泄される。","explanation":"正答: 4\n1: 亜鉛過剰は銅の吸収を妨げる。\n2: 資料では亜鉛欠乏の発症は14～104日とされる。\n3: セレン欠乏で爪の変化がみられる。\n4: 胆汁排泄のため、胆汁うっ滞では銅の蓄積に注意する。\n5: 銅の排泄は主に胆汁を介する。","referencePage":"59,60,61","referenceQuestion":"24","excelRow":71},{"id":"q71","quizNumber":71,"question":"亜鉛の過剰投与に伴う問題として適切なものを1つ選べ。","choices":["銅欠乏は貧血と関係しない。","銅と亜鉛の吸収は互いに影響しない。","銅の吸収が必ず促進される。","銅欠乏では白血球数は必ず増加する。","銅の吸収が競合によって妨げられる。"],"answer":5,"answerText":"5. 銅の吸収が競合によって妨げられる。","explanation":"正答: 5\n1: 銅欠乏は貧血の原因となる。\n2: 小腸での銅と亜鉛の吸収は競合する。\n3: 過剰な亜鉛は銅の吸収を妨げる。\n4: 銅欠乏では白血球減少がみられる。\n5: 亜鉛と銅は吸収時に競合する。","referencePage":"59,60,61","referenceQuestion":"24","excelRow":72},{"id":"q72","quizNumber":72,"question":"微量元素を補給しない静脈栄養で、資料に示された欠乏症の発症時期が最も早いものを1つ選べ。","choices":["セレン","亜鉛","銅","マンガン","クロム"],"answer":2,"answerText":"2. 亜鉛","explanation":"正答: 2\n1: セレン欠乏は1～2年とされる。\n2: 亜鉛欠乏は14～104日で、他の選択肢より早い。\n3: 銅欠乏は半年以降とされる。\n4: マンガン欠乏は約2年とされる。\n5: クロム欠乏は約3年とされる。","referencePage":"59,60,61","referenceQuestion":"24","excelRow":73},{"id":"q73","quizNumber":73,"question":"夜間に見えにくくなる症状を栄養素欠乏と関連づけるとき、該当するビタミンを1つ選べ。","choices":["ビタミンB12","ビタミンA","ビタミンD","ビタミンK","ビタミンC"],"answer":2,"answerText":"2. ビタミンA","explanation":"正答: 2\n1: 欠乏は巨赤芽球性貧血に関わる。\n2: 欠乏症として夜盲症が挙げられている。\n3: 欠乏症としてくる病が挙げられている。\n4: 欠乏は出血傾向に関わる。\n5: 欠乏症として壊血病が挙げられている。","referencePage":"62,63,64,65","referenceQuestion":"25","excelRow":74},{"id":"q74","quizNumber":74,"question":"出血傾向につながる欠乏症と関連するビタミンを1つ選べ。","choices":["ビタミンK","ビタミンB12","ビタミンD","ビタミンA","ビタミンC"],"answer":1,"answerText":"1. ビタミンK","explanation":"正答: 1\n1: 欠乏は出血傾向に関わる。\n2: 欠乏は巨赤芽球性貧血に関わる。\n3: 欠乏症としてくる病が挙げられている。\n4: 欠乏症として夜盲症が挙げられている。\n5: 欠乏症として壊血病が挙げられている。","referencePage":"62,63,64,65","referenceQuestion":"25","excelRow":75},{"id":"q75","quizNumber":75,"question":"壊血病の原因となる欠乏栄養素を1つ選べ。","choices":["ビタミンK","ビタミンA","ビタミンB12","ビタミンC","ビタミンD"],"answer":4,"answerText":"4. ビタミンC","explanation":"正答: 4\n1: 欠乏は出血傾向に関わる。\n2: 欠乏症として夜盲症が挙げられている。\n3: 欠乏は巨赤芽球性貧血に関わる。\n4: 欠乏症として壊血病が挙げられている。\n5: 欠乏症としてくる病が挙げられている。","referencePage":"62,63,64,65","referenceQuestion":"25","excelRow":76},{"id":"q76","quizNumber":76,"question":"糖質投与時の乳酸蓄積と関係するビタミンB1の働きを1つ選べ。","choices":["皮膚、肝臓、腎臓で活性化されることが主な特徴である。","血液凝固だけに関与する。","ピルビン酸脱水素酵素などの反応に関与する。","体内の備蓄は不足しても数年間保たれる。","欠乏しても乳酸アシドーシスは起こらない。"],"answer":3,"answerText":"3. ピルビン酸脱水素酵素などの反応に関与する。","explanation":"正答: 3\n1: これはビタミンDの代謝の説明である。\n2: 凝固に関わるのはビタミンKである。\n3: B1はピルビン酸やαケトグルタル酸の脱水素酵素に関与する。\n4: B1の体内貯蔵は少なく、生理的半減期は9～18日とされる。\n5: B1欠乏では乳酸アシドーシスが生じうる。","referencePage":"62,63,64,65,66","referenceQuestion":"26","excelRow":77},{"id":"q77","quizNumber":77,"question":"ビタミンDの活性化に関わる経路として適切なものを1つ選べ。","choices":["ビタミンB1と同じ脱水素酵素の補酵素となることだけで活性化される。","肝臓での代謝を全く必要としない。","皮膚から直接、胆嚢だけで活性化される。","腎臓での代謝を全く必要としない。","皮膚での生成後、肝臓と腎臓で代謝される。"],"answer":5,"answerText":"5. 皮膚での生成後、肝臓と腎臓で代謝される。","explanation":"正答: 5\n1: 脱水素酵素への関与はB1の説明である。\n2: 肝臓での代謝を経る。\n3: 資料の経路には肝臓と腎臓が含まれる。\n4: 腎臓で活性化される。\n5: 資料は皮膚、肝臓、腎臓を経る活性化経路を示す。","referencePage":"62,63,64,65,66","referenceQuestion":"26","excelRow":78},{"id":"q78","quizNumber":78,"question":"ビタミンB1が補給されない状態について適切なものを1つ選べ。","choices":["欠乏による乳酸代謝への影響はない。","欠乏の主徴は夜盲症である。","枯渇には必ず5年以上を要する。","欠乏の主徴はくる病である。","比較的短期間で枯渇し、乳酸アシドーシスを生じうる。"],"answer":5,"answerText":"5. 比較的短期間で枯渇し、乳酸アシドーシスを生じうる。","explanation":"正答: 5\n1: B1不足はピルビン酸代謝を妨げ、乳酸蓄積に関わる。\n2: 夜盲症はA欠乏に関連する。\n3: B1は貯蔵量が少なく、半減期は9～18日である。\n4: くる病はD欠乏に関連する。\n5: 資料では貯蔵量が少なく半減期9～18日であることと、乳酸アシドーシスが示される。","referencePage":"62,63,64,65,66","referenceQuestion":"26","excelRow":79},{"id":"q79","quizNumber":79,"question":"回腸末端を切除した患者で、直接的に吸収が障害されるものを1つ選べ。","choices":["亜鉛とセレン","結腸で産生される短鎖脂肪酸","鉄と銅","鉄と短鎖脂肪酸","ビタミンB12と胆汁酸"],"answer":5,"answerText":"5. ビタミンB12と胆汁酸","explanation":"正答: 5\n1: 亜鉛やセレンは主として上部小腸で吸収される。\n2: 短鎖脂肪酸は結腸で吸収される。\n3: 鉄や銅は主として上部小腸で吸収される。\n4: 鉄は上部小腸、短鎖脂肪酸は結腸で吸収される。\n5: 回腸末端はB12吸収と胆汁酸再吸収の部位である。","referencePage":"67,68,69","referenceQuestion":"27","excelRow":80},{"id":"q80","quizNumber":80,"question":"回腸切除に伴う胆汁酸再吸収の障害について適切なものを1つ選べ。","choices":["胆汁酸は回腸で再吸収されないため影響はない。","胆汁酸プールが増加して脂肪吸収が必ず改善する。","結腸の短鎖脂肪酸吸収だけが直接障害される。","鉄の吸収部位だけが失われる。","胆汁酸プールが減少し、脂肪吸収障害を生じうる。"],"answer":5,"answerText":"5. 胆汁酸プールが減少し、脂肪吸収障害を生じうる。","explanation":"正答: 5\n1: 胆汁酸は回腸で再吸収される。\n2: 再吸収障害によりプールは減少しうる。\n3: 直接失われるのは回腸の吸収機能である。\n4: 回腸末端はB12と胆汁酸の吸収に関わる。\n5: 胆汁酸再吸収の低下は胆汁酸プール減少と脂肪便に関わる。","referencePage":"67,68,69","referenceQuestion":"27","excelRow":81},{"id":"q81","quizNumber":81,"question":"消化管と主な吸収対象の対応として適切なものを1つ選べ。","choices":["結腸―ビタミンB12","上部小腸―鉄、亜鉛、銅、セレン","回腸末端―短鎖脂肪酸","胃―胆汁酸の再吸収","上部小腸―ビタミンB12だけ"],"answer":2,"answerText":"2. 上部小腸―鉄、亜鉛、銅、セレン","explanation":"正答: 2\n1: B12の吸収部位は回腸末端である。\n2: これらの微量元素は上部小腸で吸収される。\n3: 短鎖脂肪酸は結腸で吸収される。\n4: 胆汁酸の再吸収部位は回腸である。\n5: B12の吸収は回腸末端で行われる。","referencePage":"67,68,69","referenceQuestion":"27","excelRow":82},{"id":"q82","quizNumber":82,"question":"GLIM基準で低栄養と診断するための組み合わせを1つ選べ。","choices":["炎症の有無にかかわらずBMIだけで確定する。","病因基準だけを2項目満たす。","表現型基準を1項目以上、病因基準を1項目以上満たす。","歩行速度低下だけを認める。","表現型基準だけを2項目満たす。"],"answer":3,"answerText":"3. 表現型基準を1項目以上、病因基準を1項目以上満たす。","explanation":"正答: 3\n1: 診断には表現型と病因の両群を確認する。\n2: 表現型基準も必要である。\n3: GLIMでは両群から少なくとも1項目ずつ必要である。\n4: 歩行速度はGLIMの表現型基準に含まれない。\n5: 病因基準も必要である。","referencePage":"72,73,74,81","referenceQuestion":"28","excelRow":83},{"id":"q83","quizNumber":83,"question":"GLIMの表現型基準に含まれる組み合わせを1つ選べ。","choices":["食事摂取量減少、吸収障害、炎症","体重減少、低BMI、筋肉量減少","体重減少、歩行速度低下、炎症","低BMI、炎症、吸収障害","歩行速度低下、食事摂取量減少、炎症"],"answer":2,"answerText":"2. 体重減少、低BMI、筋肉量減少","explanation":"正答: 2\n1: これらは病因側の項目である。\n2: この3項目が表現型基準である。\n3: 歩行速度は基準外で、炎症は病因側である。\n4: 炎症と吸収障害は病因側である。\n5: 歩行速度はGLIM基準外で、摂取量減少と炎症は病因側である。","referencePage":"72,73,74,81","referenceQuestion":"28","excelRow":84},{"id":"q84","quizNumber":84,"question":"GLIMによる低栄養評価の手順として適切なものを1つ選べ。","choices":["重症度判定だけでスクリーニングを省略する。","炎症を認めれば表現型にかかわらず診断する。","歩行速度の測定だけで診断を完了する。","スクリーニングを行い、診断基準を確認してから重症度を判定する。","病因基準を確認せず重症度だけで診断する。"],"answer":4,"answerText":"4. スクリーニングを行い、診断基準を確認してから重症度を判定する。","explanation":"正答: 4\n1: 最初に栄養スクリーニングを行う。\n2: 表現型基準も少なくとも1項目必要である。\n3: 歩行速度だけではGLIM診断はできない。\n4: 資料はスクリーニング、診断、重症度判定の順序を示す。\n5: 診断では病因基準も確認する。","referencePage":"72,73,74,81","referenceQuestion":"28","excelRow":85},{"id":"q85","quizNumber":85,"question":"GNRIの評価に必要な情報を1つ選べ。","choices":["総リンパ球数と食欲だけ","血清アルブミンと体重に関する比","年齢と食欲だけ","炎症と筋肉量だけ","歩行速度と握力だけ"],"answer":2,"answerText":"2. 血清アルブミンと体重に関する比","explanation":"正答: 2\n1: 総リンパ球数はPNIで用いられ、GNRIには体重比が必要である。\n2: GNRIは血清アルブミンと体重比を用いる。\n3: GNRIの計算要素ではない。\n4: これらはGLIMで扱う項目である。\n5: GNRIの構成はアルブミンと体重比である。","referencePage":"74,75,76,77,78,79,81","referenceQuestion":"29","excelRow":86},{"id":"q86","quizNumber":86,"question":"栄養評価法の特徴と名称の組み合わせとして適切なものを1つ選べ。","choices":["GNRI―総リンパ球数だけを用いる。","SGA―検査値だけで評価する。","MST―握力と歩行速度を用いる。","PNI―血清アルブミンと総リンパ球数を用いる。","MUST―血清アルブミンだけを用いる。"],"answer":4,"answerText":"4. PNI―血清アルブミンと総リンパ球数を用いる。","explanation":"正答: 4\n1: GNRIはアルブミンと体重比を用いる。\n2: SGAは病歴と身体所見による主観的評価である。\n3: MSTは体重減少と食欲に関する項目を用いる。\n4: PNIではこの2項目を用いる。\n5: MUSTはBMI、体重減少、急性疾患の影響を扱う。","referencePage":"74,75,76,77,78,79,81","referenceQuestion":"29","excelRow":87},{"id":"q87","quizNumber":87,"question":"高齢者用の栄養評価法で、短縮版が6つの質問で構成されるものを1つ選べ。","choices":["MUST","PNI","MNA","MST","SGA"],"answer":3,"answerText":"3. MNA","explanation":"正答: 3\n1: MUSTはBMI、体重減少、急性疾患の影響を用いる。\n2: PNIはアルブミンと総リンパ球数を用いる指標である。\n3: MNAは高齢者の栄養評価法で、MNA-SFは6つの質問で構成される。\n4: MSTは体重減少と食欲を用いるスクリーニング法として示される。\n5: SGAは病歴と身体所見による主観的評価で、MNA-SFとは異なる。","referencePage":"74,75,76,77,78,79,81","referenceQuestion":"29","excelRow":88},{"id":"q88","quizNumber":88,"question":"血清アルブミンを栄養評価に用いる際に適切な解釈を1つ選べ。","choices":["血管外への分布がないため体液の影響を受けない。","甲状腺機能亢進では必ず高値になる。","炎症があっても値は変化しない。","炎症などの影響を受けるため、低値だけで低栄養を断定しない。","低値は必ず栄養摂取量不足だけで説明できる。"],"answer":4,"answerText":"4. 炎症などの影響を受けるため、低値だけで低栄養を断定しない。","explanation":"正答: 4\n1: アルブミンの多くは血管外に分布する。\n2: 資料では甲状腺機能亢進は低値の要因とされる。\n3: 炎症はアルブミン低下の要因となる。\n4: アルブミンは炎症や体内分布などの影響を受ける。\n5: 栄養以外の要因でも低下する。","referencePage":"82,83,84","referenceQuestion":"30","excelRow":89},{"id":"q89","quizNumber":89,"question":"アルブミンの合成と分布について適切なものを1つ選べ。","choices":["腎臓で合成され、全量が血管内に存在する。","肝臓で合成され、血管外にも多く分布する。","結腸で合成され、血管内だけに存在する。","肝臓で合成され、血管外には存在しない。","血管外から血管内へは戻らない。"],"answer":2,"answerText":"2. 肝臓で合成され、血管外にも多く分布する。","explanation":"正答: 2\n1: 合成は肝臓で、血管外にも存在する。\n2: 肝臓で合成され、約60～70%が血管外に存在する。\n3: 資料が示す合成臓器は肝臓である。\n4: 血管外の割合は約60～70%である。\n5: リンパを経て血管内に戻る。","referencePage":"82,83,84","referenceQuestion":"30","excelRow":90},{"id":"q90","quizNumber":90,"question":"体内アルブミンの移動について適切なものを1つ選べ。","choices":["血管外のアルブミンはリンパを介して血管内へ戻る。","血管外の割合は約5%である。","血管内の割合は常に100%である。","炎症による低下は栄養状態とは必ず一致する。","甲状腺機能亢進は値を変化させない。"],"answer":1,"answerText":"1. 血管外のアルブミンはリンパを介して血管内へ戻る。","explanation":"正答: 1\n1: 資料にリンパを介する還流が示されている。\n2: 血管外は約60～70%である。\n3: 血管内は約30～40%である。\n4: 炎症の影響があり、低栄養と必ず一致するわけではない。\n5: 甲状腺機能亢進は低値の要因として示される。","referencePage":"82,83,84","referenceQuestion":"30","excelRow":91},{"id":"q91","quizNumber":91,"question":"窒素バランスを推定する際、蛋白質摂取量を窒素量へ換算する式を1つ選べ。","choices":["尿中尿素窒素量だけを摂取窒素量とする。","蛋白質摂取量を6.25倍する。","摂取蛋白質量と摂取窒素量は同じである。","24時間の尿中尿素窒素を6.25で除して摂取量とする。","蛋白質摂取量を6.25で除する。"],"answer":5,"answerText":"5. 蛋白質摂取量を6.25で除する。","explanation":"正答: 5\n1: 尿中尿素窒素量は排泄側の推定に用いる。\n2: 窒素量への換算は除算である。\n3: 6.25による換算が必要である。\n4: 摂取量は摂取蛋白質から算出する。\n5: 蛋白質中の窒素割合に基づき、窒素量は蛋白質量÷6.25で算出する。","referencePage":"85,86,87","referenceQuestion":"31","excelRow":92},{"id":"q92","quizNumber":92,"question":"窒素バランスの解釈として適切なものを1つ選べ。","choices":["摂取蛋白質量だけで正負を確定できる。","尿中尿素窒素を測定すれば腎機能の影響を受けない。","侵襲時には負となりやすい。","妊娠中には必ず負となる。","健康成人では必ず大きく正となる。"],"answer":3,"answerText":"3. 侵襲時には負となりやすい。","explanation":"正答: 3\n1: 排泄窒素量も必要である。\n2: 腎機能障害では評価に注意が必要である。\n3: 侵襲では蛋白異化が亢進し、窒素バランスは負となりやすい。\n4: 妊娠中は正の窒素バランスとなる。\n5: 健康成人ではおおむねゼロである。","referencePage":"85,86,87","referenceQuestion":"31","excelRow":93},{"id":"q93","quizNumber":93,"question":"蛋白質摂取量100g/日、尿中尿素窒素12g/日の患者で、排泄窒素を尿中尿素窒素×5/4と推定する。窒素バランスを1つ選べ。","choices":["+4g/日","0g/日","+85g/日","+1g/日","-1g/日"],"answer":4,"answerText":"4. +1g/日","explanation":"正答: 4\n1: 尿中尿素窒素には5/4の補正を行う。\n2: 計算上、摂取16gと排泄15gは一致しない。\n3: 100gは蛋白質量であり、窒素量へ換算する必要がある。\n4: 摂取窒素100÷6.25=16g、排泄窒素12×5/4=15g、差は+1gである。\n5: 摂取量から排泄量を引くので16−15=+1gである。","referencePage":"85,86,87","referenceQuestion":"31","excelRow":94},{"id":"q94","quizNumber":94,"question":"周波数を変えた電気インピーダンスにより細胞内・細胞外の水分区画を評価する方法を1つ選べ。","choices":["MRI","上腕周囲長の測定","DEXA","MFBIA","CT"],"answer":4,"answerText":"4. MFBIA","explanation":"正答: 4\n1: MRIは断面画像で筋肉や脂肪を評価する。\n2: 身体計測による評価で、電気インピーダンスは利用しない。\n3: DEXAは2種類のX線で体組成を評価する方法である。\n4: 多周波数生体電気インピーダンス法は周波数を変えて水分区画を評価する。\n5: CTは断面画像で筋肉や脂肪を評価する。","referencePage":"88,89","referenceQuestion":"32","excelRow":95},{"id":"q95","quizNumber":95,"question":"DEXAとMFBIAの比較として適切なものを1つ選べ。","choices":["DEXAは骨塩量を評価でき、MFBIAは体水分の評価に利用できる。","両者とも骨塩量を測定し、水分は評価できない。","DEXAは細胞内水分だけを、MFBIAは骨塩量だけを測る。","DEXAでは脂肪量や筋肉量を評価できない。","MFBIAでは筋肉量を評価できない。"],"answer":1,"answerText":"1. DEXAは骨塩量を評価でき、MFBIAは体水分の評価に利用できる。","explanation":"正答: 1\n1: DEXAは骨塩量、MFBIAは体水分などを評価する。\n2: MFBIAは体水分を評価する。\n3: 両者の特徴が資料と異なる。\n4: DEXAは骨塩量に加え脂肪・筋肉量を評価する。\n5: MFBIAは筋肉量も評価する。","referencePage":"88,89","referenceQuestion":"32","excelRow":96},{"id":"q96","quizNumber":96,"question":"体組成評価法について適切なものを1つ選べ。","choices":["DEXAは細胞内外の水分を直接測定する。","CTは尿中尿素窒素量を測定する。","MFBIAは水分の評価に使用できない。","CTやMRIは筋肉などの断面画像の評価に利用できる。","身体計測には測定誤差がない。"],"answer":4,"answerText":"4. CTやMRIは筋肉などの断面画像の評価に利用できる。","explanation":"正答: 4\n1: DEXAは骨塩量、脂肪量、筋肉量を評価し、水分区画の測定法ではない。\n2: CTは画像による評価法である。\n3: MFBIAで体水分を評価できる。\n4: 資料ではCT・MRIを断面による評価法として示す。\n5: 簡便な身体計測でも誤差に注意する。","referencePage":"88,89","referenceQuestion":"32","excelRow":97},{"id":"q97","quizNumber":97,"question":"間接熱量測定の原理に関する説明として適切なものを1つ選べ。","choices":["測定値は時間によって変化しない。","体重だけから常に同じ消費量を決める。","気管切開患者では必ず測定不能である。","呼吸商は酸素消費量÷二酸化炭素産生量である。","酸素消費量と二酸化炭素産生量からエネルギー消費量を算出する。"],"answer":5,"answerText":"5. 酸素消費量と二酸化炭素産生量からエネルギー消費量を算出する。","explanation":"正答: 5\n1: エネルギー消費は動的に変化する。\n2: 実測した呼吸ガスを用いて算出する。\n3: 気管切開でも測定可能である。\n4: 呼吸商はVCO2÷VO2である。\n5: 間接熱量測定はVO2とVCO2を用いる。","referencePage":"90,91,92","referenceQuestion":"33","excelRow":98},{"id":"q98","quizNumber":98,"question":"呼吸商による糖質・脂質・蛋白質の比較として適切なものを1つ選べ。","choices":["糖質と脂質の呼吸商はともに1.0である。","糖質の呼吸商は脂質より高い。","蛋白質の呼吸商は糖質より高い。","蛋白質と脂質の呼吸商はともに0.81である。","脂質の呼吸商は糖質より高い。"],"answer":2,"answerText":"2. 糖質の呼吸商は脂質より高い。","explanation":"正答: 2\n1: 脂質は約0.71である。\n2: 糖質1.0、脂質0.71であり、糖質の方が高い。\n3: 蛋白質0.81は糖質1.0より低い。\n4: 蛋白質0.81、脂質0.71である。\n5: 脂質0.71は糖質1.0より低い。","referencePage":"90,91,92","referenceQuestion":"33","excelRow":99},{"id":"q99","quizNumber":99,"question":"間接熱量測定で測定誤差が大きくなりうる条件を1つ選べ。","choices":["吸入酸素濃度が60%を超える。","気管切開があるというだけで全例測定不能となる。","絶食時間を8時間確保する。","酸素消費量を測定する。","二酸化炭素産生量を測定する。"],"answer":1,"answerText":"1. 吸入酸素濃度が60%を超える。","explanation":"正答: 1\n1: 高い吸入酸素濃度や高いPEEPでは誤差に注意する。\n2: 気管切開でも測定できる。\n3: 資料では測定前に8時間の絶食が必要とされる。\n4: 酸素消費量は必要な測定値である。\n5: 二酸化炭素産生量は必要な測定値である。","referencePage":"90,91,92","referenceQuestion":"33","excelRow":100},{"id":"q100","quizNumber":100,"question":"乳幼児の水分管理について適切なものを1つ選べ。","choices":["成人より体水分の割合が少ない。","体水分の多さから脱水は起こらない。","尿濃縮能は成人より高い。","細胞外液の割合が成人より小さい。","腎の濃縮能が未熟で、脱水に注意を要する。"],"answer":5,"answerText":"5. 腎の濃縮能が未熟で、脱水に注意を要する。","explanation":"正答: 5\n1: 乳幼児では体水分の割合が多い。\n2: 濃縮能の未熟さなどにより脱水に注意が必要である。\n3: 乳幼児の腎濃縮能は未熟である。\n4: 乳幼児では細胞外液の割合が多い。\n5: 乳幼児では尿濃縮能が低く、脱水を生じやすい。","referencePage":"93,94,95,96","referenceQuestion":"34","excelRow":101},{"id":"q101","quizNumber":101,"question":"乳幼児の消化・代謝の特徴として適切なものを1つ選べ。","choices":["尿濃縮能が完成している。","体水分は体重のごく少部分に限られる。","リパーゼ活性は成人より十分に高い。","体重当たりの糖利用能力は高い。","細胞外液の割合は成人より低い。"],"answer":4,"answerText":"4. 体重当たりの糖利用能力は高い。","explanation":"正答: 4\n1: 腎の濃縮能は未熟である。\n2: 乳幼児では体水分の割合が高い。\n3: 乳幼児ではリパーゼ活性が低い。\n4: 資料では乳幼児の体重当たりの糖質処理能力が高いとされる。\n5: 乳幼児は細胞外液の割合が多い。","referencePage":"93,94,95,96","referenceQuestion":"34","excelRow":102},{"id":"q102","quizNumber":102,"question":"乳幼児と成人の比較として適切な組み合わせを1つ選べ。","choices":["乳幼児は体水分割合が低く、腎の濃縮能も低い。","乳幼児は糖利用能力が低く、リパーゼ活性が高い。","乳幼児は体水分割合が高く、腎の濃縮能も高い。","乳幼児は体水分割合が高く、腎の濃縮能は低い。","乳幼児は細胞外液割合が低く、リパーゼ活性が高い。"],"answer":4,"answerText":"4. 乳幼児は体水分割合が高く、腎の濃縮能は低い。","explanation":"正答: 4\n1: 乳幼児の体水分割合は高い。\n2: 体重当たりの糖利用能力は高く、リパーゼ活性は低い。\n3: 濃縮能は低い。\n4: 水分割合が高い一方、濃縮能が未熟である。\n5: 細胞外液割合は多く、リパーゼ活性は低い。","referencePage":"93,94,95,96","referenceQuestion":"34","excelRow":103},{"id":"q103","quizNumber":103,"question":"離乳前の栄養組成について、資料に示されたエネルギー比率を1つ選べ。","choices":["脂質10%、蛋白質40～50%、糖質40～50%","脂質40～50%、蛋白質40～50%、糖質10%","脂質80%、蛋白質10%、糖質10%","脂質0%、蛋白質10%、糖質90%","脂質40～50%、蛋白質約10%、糖質40～50%"],"answer":5,"answerText":"5. 脂質40～50%、蛋白質約10%、糖質40～50%","explanation":"正答: 5\n1: 蛋白質は約10%、脂質は40～50%である。\n2: 蛋白質は約10%である。\n3: 脂質・糖質はそれぞれ40～50%である。\n4: 資料の脂質比率は40～50%である。\n5: 離乳前は脂質比率が高く、この比率が示される。","referencePage":"93,94,95,96","referenceQuestion":"35","excelRow":104},{"id":"q104","quizNumber":104,"question":"乳児の消化機能を考えた説明として適切なものを1つ選べ。","choices":["母乳の主な蛋白質はカゼインだけである。","デキストリンの消化にはグルコアミラーゼが関わらない。","ラクターゼ活性は高いが、アミラーゼ活性は低い。","体重当たりのエネルギー必要量は成人より低い。","ラクターゼ活性が低く、アミラーゼ活性が高い。"],"answer":3,"answerText":"3. ラクターゼ活性は高いが、アミラーゼ活性は低い。","explanation":"正答: 3\n1: 母乳では乳清蛋白質が多い。\n2: グルコアミラーゼはデキストリンの消化に関わる。\n3: 乳児の酵素活性にはこの特徴がある。\n4: 乳児の体重当たり必要量は高い。\n5: 資料の説明とは逆である。","referencePage":"93,94,95,96","referenceQuestion":"35","excelRow":105},{"id":"q105","quizNumber":105,"question":"乳児の栄養投与設計について適切なものを1つ選べ。","choices":["体重当たり必要エネルギーは成人より低い。","蛋白質比率は離乳前で40～50%とする。","乳児では乳糖を消化できないことが基本である。","脂質を全く含めないことが基本である。","NPC/N比として200～250が示されている。"],"answer":5,"answerText":"5. NPC/N比として200～250が示されている。","explanation":"正答: 5\n1: 乳児では成人より高い。\n2: 離乳前の蛋白質比率は約10%である。\n3: ラクターゼ活性は高い。\n4: 離乳前の脂質エネルギー比率は40～50%である。\n5: 乳児では高いエネルギー需要を踏まえ、この比が示される。","referencePage":"93,94,95,96","referenceQuestion":"35","excelRow":106},{"id":"q106","quizNumber":106,"question":"母乳に含まれる消化酵素に関する説明を1つ選べ。","choices":["母乳オリゴ糖はビフィズス菌に関係しない。","胆汁酸依存性リパーゼは加熱で必ず活性が増す。","母乳には脂肪消化に関わる酵素が存在しない。","初乳にはIgAが含まれない。","胆汁酸依存性リパーゼは加熱で失活する。"],"answer":5,"answerText":"5. 胆汁酸依存性リパーゼは加熱で失活する。","explanation":"正答: 5\n1: 母乳オリゴ糖はビフィズス菌の増殖に関わる。\n2: 加熱で失活する。\n3: 母乳にはBSSLが含まれる。\n4: 初乳にはIgAが豊富に含まれる。\n5: 母乳のBSSLは熱に弱い。","referencePage":"97,98,99","referenceQuestion":"36","excelRow":107},{"id":"q107","quizNumber":107,"question":"母乳の免疫・腸内環境に関わる成分の組み合わせを1つ選べ。","choices":["鉄とビタミンDを十分に供給する母乳だけ","初乳に存在しないIgA、ビフィズス菌と無関係の母乳オリゴ糖","加熱で活性化するBSSL、IgAを欠く初乳","乳清蛋白質を欠く母乳、IgAを欠く初乳","初乳のIgA、ビフィズス菌に関わる母乳オリゴ糖"],"answer":5,"answerText":"5. 初乳のIgA、ビフィズス菌に関わる母乳オリゴ糖","explanation":"正答: 5\n1: 母乳では鉄とビタミンDの不足に注意する。\n2: いずれも資料の説明に反する。\n3: BSSLは加熱失活し、初乳にはIgAが含まれる。\n4: 母乳は乳清蛋白質が多く、初乳にはIgAが含まれる。\n5: 資料に両者の働きが示されている。","referencePage":"97,98,99","referenceQuestion":"36","excelRow":108},{"id":"q108","quizNumber":108,"question":"母乳栄養に関する説明として適切なものを1つ選べ。","choices":["カリウム濃度は人工乳より高い。","母乳の酵素活性は加熱処理に影響されない。","母乳蛋白質の60～70%はカゼインである。","蛋白質濃度は人工乳より高い。","鉄とビタミンDの不足に注意が必要である。"],"answer":5,"answerText":"5. 鉄とビタミンDの不足に注意が必要である。","explanation":"正答: 5\n1: 母乳のカリウム濃度は低い。\n2: BSSLは加熱で失活する。\n3: 60～70%を占めるのは乳清蛋白質である。\n4: 母乳の蛋白質濃度は人工乳より低い。\n5: 資料では母乳で不足しうる栄養素として両者が示される。","referencePage":"97,98,99","referenceQuestion":"36","excelRow":109},{"id":"q109","quizNumber":109,"question":"資料に示された日本人の食事摂取基準2020年版で、75歳以上の目標BMI範囲を1つ選べ。","choices":["25.0～29.9","30.0～34.9","18.5～20.0","21.5～24.9","15.0～18.4"],"answer":4,"answerText":"4. 21.5～24.9","explanation":"正答: 4\n1: 資料の上限24.9を超える。\n2: 資料の範囲ではない。\n3: 資料の範囲は21.5～24.9である。\n4: 75歳以上の目標BMI範囲として21.5～24.9が示される。\n5: 資料の範囲より低い。","referencePage":"100,101,102","referenceQuestion":"37","excelRow":110},{"id":"q110","quizNumber":110,"question":"資料の2020年版食事摂取基準における65歳以上の蛋白質目標量を、エネルギー比率で1つ選べ。","choices":["5～10%","40～50%","25～30%","15～20%","10～12%"],"answer":4,"answerText":"4. 15～20%","explanation":"正答: 4\n1: 資料の目標量より低い。\n2: 資料の目標量とは異なる。\n3: 資料の目標量より高い。\n4: 65歳以上の蛋白質目標量は15～20%エネルギーである。\n5: 資料の目標量は15～20%である。","referencePage":"100,101,102","referenceQuestion":"37","excelRow":111},{"id":"q111","quizNumber":111,"question":"資料に示された食事摂取基準・疾患管理に関する説明として適切なものを1つ選べ。","choices":["75歳以上のBMIは30以上を目標とする。","1歳以上の脂質目標量は5～10%エネルギーである。","65歳以上では蛋白質目標量を5%エネルギー未満とする。","1歳以上の脂質目標量は40～50%エネルギーである。","慢性腎臓病では食塩6g/日未満が示されている。"],"answer":5,"answerText":"5. 慢性腎臓病では食塩6g/日未満が示されている。","explanation":"正答: 5\n1: 目標範囲は21.5～24.9である。\n2: 資料では20～30%エネルギーである。\n3: 目標量は15～20%エネルギーである。\n4: 資料では20～30%エネルギーである。\n5: CKDの食塩目標は6g/日未満である。","referencePage":"100,101,102","referenceQuestion":"37","excelRow":112},{"id":"q112","quizNumber":112,"question":"半側空間無視のある患者が、食器の片側の料理を残す。食事介助として適切なものを1つ選べ。","choices":["失語症と同じく発話だけを調整すればよい。","食事の残し方だけで嚥下反射の消失と判断する。","食器の配置を調整し、食物を認識できるようにする。","食物を認識しているので配置は変えない。","片麻痺による姿勢の問題とだけ判断する。"],"answer":3,"answerText":"3. 食器の配置を調整し、食物を認識できるようにする。","explanation":"正答: 3\n1: 半側空間無視には食器の配置などへの対応が必要である。\n2: 片側を残す所見は半側空間無視に関連する。\n3: 視空間認知の障害に応じて食器や食物の配置を工夫する。\n4: 片側の食物を認識しにくいため配置を調整する。\n5: 姿勢だけでなく視空間認知への配慮が必要である。","referencePage":"136,137,138","referenceQuestion":"47","excelRow":113},{"id":"q113","quizNumber":113,"question":"食物や食事動作の認識の障害に応じた対応が必要となる病態を1つ選べ。","choices":["失語のみ","失行","仮性球麻痺のみ","半側空間無視による片側の食物の見落としのみ","片麻痺のみ"],"answer":2,"answerText":"2. 失行","explanation":"正答: 2\n1: 失語では意思疎通への対応が中心となる。\n2: 食物認識や食事動作の障害に応じて支援する。\n3: 仮性球麻痺では嚥下機能の障害に注意する。\n4: 半側空間無視では空間的な配置への配慮が必要となる。\n5: 片麻痺では姿勢や食事動作への身体的支援が必要となる。","referencePage":"136,137,138","referenceQuestion":"47","excelRow":114},{"id":"q114","quizNumber":114,"question":"脳血管障害後の食事支援に関する対応として適切なものを1つ選べ。","choices":["仮性球麻痺では嚥下障害を考慮しない。","失語症があれば意思疎通への配慮は不要である。","失行では食物や動作の認識を評価しない。","半側空間無視では食器配置は考慮しない。","片麻痺では食事姿勢を調整する。"],"answer":5,"answerText":"5. 片麻痺では食事姿勢を調整する。","explanation":"正答: 5\n1: 仮性球麻痺は嚥下障害を伴いうる。\n2: 失語症では意思疎通の工夫が必要である。\n3: 認識や食事動作の障害への対応が必要である。\n4: 認識しやすい配置を工夫する。\n5: 片麻痺では安定した姿勢などへの介助が必要である。","referencePage":"136,137,138","referenceQuestion":"47","excelRow":115},{"id":"q115","quizNumber":115,"question":"糖尿病患者向け経腸栄養剤の組成について適切なものを1つ選べ。","choices":["糖質を抑え、一価不飽和脂肪酸や食物繊維を利用する。","一価不飽和脂肪酸を必ず除去する。","糖質比率を高め、食物繊維を全く含めないことが特徴である。","分岐鎖アミノ酸は非必須アミノ酸である。","短期の血糖変化だけで長期予後改善が確定する。"],"answer":1,"answerText":"1. 糖質を抑え、一価不飽和脂肪酸や食物繊維を利用する。","explanation":"正答: 1\n1: 資料では低糖質、一価不飽和脂肪酸、食物繊維などの特徴が示される。\n2: 一価不飽和脂肪酸を利用する。\n3: 資料の特徴は糖質抑制と食物繊維の利用である。\n4: 分岐鎖アミノ酸は必須アミノ酸である。\n5: 長期予後への効果は明確でないとされる。","referencePage":"139,140","referenceQuestion":"48","excelRow":116},{"id":"q116","quizNumber":116,"question":"糖代謝への作用が説明された分岐鎖アミノ酸と特徴の組み合わせを1つ選べ。","choices":["イソロイシン―糖新生を促進する。","イソロイシン―糖取り込みを促進し、糖新生を抑制する。","イソロイシン―糖取り込みを抑制する。","分岐鎖アミノ酸―全て非必須アミノ酸である。","イソロイシン―非必須アミノ酸である。"],"answer":2,"answerText":"2. イソロイシン―糖取り込みを促進し、糖新生を抑制する。","explanation":"正答: 2\n1: 資料では糖新生抑制が説明される。\n2: 資料ではイソロイシンの糖取り込み促進などが説明される。\n3: 資料では促進が示される。\n4: 分岐鎖アミノ酸は必須アミノ酸である。\n5: イソロイシンは必須アミノ酸である。","referencePage":"139,140","referenceQuestion":"48","excelRow":117},{"id":"q117","quizNumber":117,"question":"糖尿病用経腸栄養剤の評価について適切なものを1つ選べ。","choices":["血糖への効果と長期予後への効果は分けて評価する。","パラチノースは使用されないことが特徴である。","糖質比率を最大限高めることが基本である。","食物繊維は糖尿病用製剤から必ず除かれる。","長期予後の改善は必ず保証される。"],"answer":1,"answerText":"1. 血糖への効果と長期予後への効果は分けて評価する。","explanation":"正答: 1\n1: 資料は血糖管理上の利点を示す一方、長期予後は明確でないとする。\n2: 資料にパラチノースの利用が示される。\n3: 糖質比率を抑える構成が示される。\n4: 食物繊維が利用される。\n5: 長期予後への効果は明確ではない。","referencePage":"139,140","referenceQuestion":"48","excelRow":118},{"id":"q118","quizNumber":118,"question":"資料に示された集中治療中の血糖管理目標として適切な範囲を1つ選べ。","choices":["200～250mg/dL","300～350mg/dL","80～110mg/dLを全例で厳密に維持する。","140～180mg/dL","40～60mg/dL"],"answer":4,"answerText":"4. 140～180mg/dL","explanation":"正答: 4\n1: 資料の目標上限180mg/dLを超える。\n2: 資料の目標範囲ではない。\n3: 厳格な管理による低血糖の危険に注意する。\n4: 低血糖を回避しつつ140～180mg/dLを目標とする。\n5: 低血糖を避けるため、この範囲を目標にしない。","referencePage":"141,142,143","referenceQuestion":"49","excelRow":119},{"id":"q119","quizNumber":119,"question":"重症病態での高血糖の背景として適切なものを1つ選べ。","choices":["ストレスホルモンは血糖変化と無関係である。","血糖を40mg/dLに下げることで抵抗性を治療する。","ストレスホルモンの作用とインスリン抵抗性","侵襲時にはインスリン感受性が必ず高まる。","高血糖を認めれば糖代謝の評価は不要である。"],"answer":3,"answerText":"3. ストレスホルモンの作用とインスリン抵抗性","explanation":"正答: 3\n1: ストレスホルモンは高血糖に関わる。\n2: 低血糖を避け、資料の目標範囲を用いる。\n3: 侵襲時にはストレス反応とインスリン抵抗性により高血糖となる。\n4: 資料ではインスリン抵抗性が説明される。\n5: 重症患者では血糖の管理が必要である。","referencePage":"141,142,143","referenceQuestion":"49","excelRow":120},{"id":"q120","quizNumber":120,"question":"集中治療で80～110mg/dLを目指す厳格な血糖管理に注意する理由を1つ選べ。","choices":["低血糖の危険が増すため。","140～180mg/dLが低血糖の範囲だから。","ストレス反応による高血糖は起こらないから。","低血糖は重症患者では問題にならないから。","インスリン抵抗性が侵襲時には生じないから。"],"answer":1,"answerText":"1. 低血糖の危険が増すため。","explanation":"正答: 1\n1: 資料は厳格な血糖管理に伴う低血糖の危険を示している。\n2: 資料では140～180mg/dLが目標範囲である。\n3: ストレス反応は高血糖に関わる。\n4: 低血糖を回避することが重要である。\n5: 侵襲時にはインスリン抵抗性が生じる。","referencePage":"141,142,143","referenceQuestion":"49","excelRow":121},{"id":"q121","quizNumber":121,"question":"COPD患者の食事計画として適切なものを1つ選べ。","choices":["栄養療法中は運動療法を全く行わない。","安静時エネルギー消費は低下するため常に投与量を減らす。","蛋白質投与は0.3g/kg/日とする。","少量頻回食で必要量を確保する。","一度に全量を摂取し、回数を最小限にする。"],"answer":4,"answerText":"4. 少量頻回食で必要量を確保する。","explanation":"正答: 4\n1: 資料では運動療法の併用も示される。\n2: COPDでは安静時エネルギー消費が増加する。\n3: 資料の目安は1.2～1.5g/kg/日である。\n4: 呼吸負担などを考慮し、少量頻回食が推奨される。\n5: 資料では少量頻回食が示される。","referencePage":"144,145","referenceQuestion":"50","excelRow":122},{"id":"q122","quizNumber":122,"question":"COPDで二酸化炭素産生を考慮した栄養組成として適切なものを1つ選べ。","choices":["エネルギーは安静時消費量の半分とする。","糖質の過剰を避け、脂質の利用を考慮する。","糖質をできるだけ増やし、脂質を除く。","糖質と脂質の二酸化炭素産生は必ず同じである。","蛋白質は全く投与しない。"],"answer":2,"answerText":"2. 糖質の過剰を避け、脂質の利用を考慮する。","explanation":"正答: 2\n1: 資料では約1.5倍を目安とする。\n2: 糖質は脂質より呼吸商が高く、二酸化炭素産生に配慮する。\n3: 資料では糖質を抑えた脂質利用が示される。\n4: 資料では糖質と脂質の呼吸商の違いが示される。\n5: 目安として1.2～1.5g/kg/日が示される。","referencePage":"144,145","referenceQuestion":"50","excelRow":123},{"id":"q123","quizNumber":123,"question":"COPD患者で安静時エネルギー消費量が1200kcal/日だった。資料の約1.5倍という目安による投与量を1つ選べ。","choices":["1800kcal/日","600kcal/日","800kcal/日","2400kcal/日","1200kcal/日"],"answer":1,"answerText":"1. 1800kcal/日","explanation":"正答: 1\n1: 1200×1.5=1800kcal/日となる。\n2: 資料の目安は半分ではなく約1.5倍である。\n3: 1200を1.5で除するのではない。\n4: 2倍ではなく約1.5倍を用いる。\n5: 資料では安静時消費量の約1.5倍とする。","referencePage":"144,145","referenceQuestion":"50","excelRow":124},{"id":"q124","quizNumber":124,"question":"eGFR30.8mL/分/1.73m²、血清K5.8mEq/LのCKD患者に対する食事管理として適切なものを1つ選べ。","choices":["食塩10g/日、カリウム制限なしとする。","エネルギーは10kcal/kg/日だけとする。","食塩6g/日未満、カリウム2000mg/日以下を目安とする。","全例でリンは一切摂取しない。","血清Kが高くてもカリウムを積極的に増量する。"],"answer":3,"answerText":"3. 食塩6g/日未満、カリウム2000mg/日以下を目安とする。","explanation":"正答: 3\n1: 資料では食塩6g未満、カリウム2000mg以下である。\n2: 資料の目安は25～35kcal/kg/日である。\n3: 資料の症例ではこの食塩・カリウム制限が示される。\n4: リンは検査値などに応じて個別に管理する。\n5: 高カリウム血症ではカリウム制限を行う。","referencePage":"146,147,148","referenceQuestion":"51","excelRow":125},{"id":"q125","quizNumber":125,"question":"資料のCKD症例で体重72kgを計算に用い、蛋白質量を0.6～0.8g/kg/日とする。目安量を1つ選べ。","choices":["21.6～28.8g/日","43.2～57.6g/日","108～144g/日","72～86.4g/日","7.2～14.4g/日"],"answer":2,"answerText":"2. 43.2～57.6g/日","explanation":"正答: 2\n1: 0.3～0.4g/kgでの計算となる。\n2: 72×0.6～0.8=43.2～57.6g/日である。\n3: 1.5～2.0g/kgでの計算となる。\n4: 1.0～1.2g/kgでの計算となる。\n5: 0.1～0.2g/kgでの計算となり、指定の範囲と異なる。","referencePage":"146,147,148","referenceQuestion":"51","excelRow":126},{"id":"q126","quizNumber":126,"question":"資料のCKD症例で、体重72kgに対して25～35kcal/kg/日を用いる場合のエネルギー量を1つ選べ。","choices":["1800～2520kcal/日","1080～1440kcal/日","3600～4320kcal/日","720～1080kcal/日","2880～3600kcal/日"],"answer":1,"answerText":"1. 1800～2520kcal/日","explanation":"正答: 1\n1: 72×25～35=1800～2520kcal/日である。\n2: 15～20kcal/kgでの計算となる。\n3: 50～60kcal/kgでの計算となる。\n4: 10～15kcal/kgでの計算となる。\n5: 40～50kcal/kgでの計算となる。","referencePage":"146,147,148","referenceQuestion":"51","excelRow":127},{"id":"q127","quizNumber":127,"question":"潰瘍性大腸炎の寛解期における食事方針として適切なものを1つ選べ。","choices":["全例で経口摂取を禁止する。","低残渣・低脂肪食を一律に続ける必要はない。","全例で脂質摂取を完全に禁止する。","薬物療法より成分栄養だけを基本治療とする。","クローン病と同様に成分栄養が基本治療となる。"],"answer":2,"answerText":"2. 低残渣・低脂肪食を一律に続ける必要はない。","explanation":"正答: 2\n1: 寛解期の一律の経口摂取禁止は示されていない。\n2: 寛解期には画一的な低残渣・低脂肪制限を必須としない。\n3: 一律の脂質制限は必要ない。\n4: 潰瘍性大腸炎の基本は薬物療法である。\n5: 成分栄養の位置づけは潰瘍性大腸炎とクローン病で異なる。","referencePage":"149,150,151,152","referenceQuestion":"52","excelRow":128},{"id":"q128","quizNumber":128,"question":"活動期の炎症性腸疾患で、資料に示された蛋白質投与量の目安を1つ選べ。","choices":["0.5～0.6g/kg/日","0.2～0.3g/kg/日","2.5～3.0g/kg/日","蛋白質は全く投与しない。","1.2～1.5g/kg/日"],"answer":5,"answerText":"5. 1.2～1.5g/kg/日","explanation":"正答: 5\n1: 資料の目安は1.2～1.5g/kg/日である。\n2: 資料の目安より少ない。\n3: 資料の目安より多い。\n4: 蛋白質投与が必要である。\n5: 活動期の蛋白質量としてこの範囲が示される。","referencePage":"149,150,151,152","referenceQuestion":"52","excelRow":129},{"id":"q129","quizNumber":129,"question":"クローン病の栄養療法について適切なものを1つ選べ。","choices":["脂肪乳剤を定期的に静注することを全例の基本とする。","活動期の必要エネルギーは5kcal/kg/日である。","活動期でも蛋白質増量は考慮しない。","潰瘍性大腸炎と成分栄養の位置づけが完全に同じである。","脂肪摂取を抑えることを考慮する。"],"answer":5,"answerText":"5. 脂肪摂取を抑えることを考慮する。","explanation":"正答: 5\n1: 資料では定期的な脂肪乳剤静注を基本とはしていない。\n2: 資料では30～35kcal/kg/日が示される。\n3: 活動期は1.2～1.5g/kg/日を目安とする。\n4: 疾患により成分栄養の位置づけは異なる。\n5: 資料ではクローン病の脂肪制限が示される。","referencePage":"149,150,151,152","referenceQuestion":"52","excelRow":130},{"id":"q130","quizNumber":130,"question":"空腸約90cmと結腸が残り、回腸を失った短腸症候群の吸収障害について適切なものを1つ選べ。","choices":["空腸が残れば胆汁酸プールは減少しない。","ビタミンB12の吸収が障害される。","胆汁酸の再吸収は保たれるため脂肪吸収は必ず正常とする。","ビタミンCだけを回腸特異的欠乏とする。","結腸があればB12吸収は完全に代償される。"],"answer":2,"answerText":"2. ビタミンB12の吸収が障害される。","explanation":"正答: 2\n1: 回腸喪失によりプールが減少しうる。\n2: 回腸末端の喪失でB12吸収が障害される。\n3: 回腸喪失で胆汁酸再吸収が障害される。\n4: 資料ではこの症例でC欠乏は起こりにくいとされる。\n5: B12の吸収部位は回腸末端である。","referencePage":"153,154,155,156","referenceQuestion":"53","excelRow":131},{"id":"q131","quizNumber":131,"question":"結腸が残存する短腸症候群でシュウ酸結石に注意する理由として適切なものを1つ選べ。","choices":["短鎖脂肪酸が結腸で全く吸収されないため。","回腸切除で胆汁酸の再吸収が増えるため。","結腸でB12が過剰に吸収されるため。","結腸からシュウ酸が吸収されるため。","結腸にはシュウ酸を吸収する働きがないため。"],"answer":4,"answerText":"4. 結腸からシュウ酸が吸収されるため。","explanation":"正答: 4\n1: 短鎖脂肪酸は結腸で吸収される。\n2: 回腸切除では再吸収が低下する。\n3: B12の主な吸収部位は回腸末端である。\n4: 結腸残存例ではシュウ酸吸収による尿路結石に注意する。\n5: 資料は結腸からの吸収を示す。","referencePage":"153,154,155,156","referenceQuestion":"53","excelRow":132},{"id":"q132","quizNumber":132,"question":"短腸症候群で結腸を残すことの栄養上の利点を1つ選べ。","choices":["短鎖脂肪酸を吸収してエネルギーに利用できる。","胆汁酸の再吸収障害を必ず完全に解消できる。","脂肪吸収障害は全く起こらなくなる。","シュウ酸結石の危険が必ずなくなる。","回腸を失ってもB12吸収部位が変わらない。"],"answer":1,"answerText":"1. 短鎖脂肪酸を吸収してエネルギーに利用できる。","explanation":"正答: 1\n1: 結腸で発酵産物の短鎖脂肪酸を吸収し、エネルギーを補う。\n2: 回腸を失うと胆汁酸再吸収障害が生じる。\n3: 胆汁酸プール減少などで脂肪吸収障害が起こりうる。\n4: 結腸残存例はシュウ酸結石に注意する。\n5: B12吸収は回腸末端の機能である。","referencePage":"153,154,155,156","referenceQuestion":"53","excelRow":133},{"id":"q133","quizNumber":133,"question":"短腸症候群でカルシウムを考慮する理由として適切なものを1つ選べ。","choices":["MCTと同じく必須脂肪酸となる。","静脈栄養用カテーテルの種類を決める。","腸管内でシュウ酸と結合し、その吸収を抑える。","シュウ酸の吸収を必ず増やす。","回腸を再生してB12吸収を完全に戻す。"],"answer":3,"answerText":"3. 腸管内でシュウ酸と結合し、その吸収を抑える。","explanation":"正答: 3\n1: カルシウムはMCTでも必須脂肪酸でもない。\n2: カルシウムの役割はカテーテル選択ではない。\n3: カルシウムとシュウ酸の結合はシュウ酸吸収の抑制に関わる。\n4: カルシウムは結合によって吸収を抑える。\n5: 資料ではカルシウムの作用はシュウ酸との結合として説明される。","referencePage":"153,154,155,156,157","referenceQuestion":"54","excelRow":134},{"id":"q134","quizNumber":134,"question":"長期間の静脈栄養を要する小児短腸症候群で、資料に示されたカテーテル選択を1つ選べ。","choices":["感染が疑われたら状況を問わず直ちに抜去する。","長期静脈栄養に中心静脈カテーテルは不要である。","PICCだけを長期管理の第一選択として固定する。","Broviacカテーテルなどを用いる。","腸管適応は起こらないので離脱を評価しない。"],"answer":4,"answerText":"4. Broviacカテーテルなどを用いる。","explanation":"正答: 4\n1: 感染時も全例即時抜去ではなく状況に応じて対応する。\n2: 長期投与のためカテーテルが必要となる。\n3: 資料では長期用としてBroviacが示される。\n4: 長期使用ではBroviacなどの皮下トンネル型が示される。\n5: 腸管適応や吸収能を評価し、離脱を検討する。","referencePage":"153,154,155,156,157","referenceQuestion":"54","excelRow":135},{"id":"q135","quizNumber":135,"question":"小児短腸症候群の栄養管理に関する説明として適切なものを1つ選べ。","choices":["シトルリンは腸管吸収能や静脈栄養離脱の評価に利用される。","MCTだけで必須脂肪酸を補給できる。","カルシウムはシュウ酸の吸収を促進する。","腸管適応は栄養管理中に起こらない。","感染時は全例、必ず直ちにカテーテルを抜去する。"],"answer":1,"answerText":"1. シトルリンは腸管吸収能や静脈栄養離脱の評価に利用される。","explanation":"正答: 1\n1: 資料ではシトルリンを腸管機能の指標として示す。\n2: MCTは必須脂肪酸ではない。\n3: カルシウムはシュウ酸と結合し吸収を抑える。\n4: 資料では約1年にわたる適応が示される。\n5: 資料では全例即時抜去とはせず、状況に応じた対応を示す。","referencePage":"153,154,155,156,157","referenceQuestion":"54","excelRow":136},{"id":"q136","quizNumber":136,"question":"サルコペニアの分類として適切なものを1つ選べ。","choices":["加齢によるものは一次性、疾患・活動・栄養に関連するものは二次性である。","栄養不足は分類に関係しない。","炎症に関連するものだけを一次性とする。","加齢はサルコペニアの要因ではない。","活動量低下に関連するものだけを一次性とする。"],"answer":1,"answerText":"1. 加齢によるものは一次性、疾患・活動・栄養に関連するものは二次性である。","explanation":"正答: 1\n1: 一次性は加齢、二次性は疾患や活動低下、栄養などに関連する。\n2: 栄養関連サルコペニアが二次性に含まれる。\n3: 炎症や疾患に関連するものは二次性である。\n4: 加齢は一次性サルコペニアの要因である。\n5: 活動量低下は二次性の要因である。","referencePage":"158,159,160,161","referenceQuestion":"55","excelRow":137},{"id":"q137","quizNumber":137,"question":"サルコペニアへの介入として適切なものを1つ選べ。","choices":["蛋白質とアミノ酸は関係しない。","筋活動を全く行わず栄養療法だけで十分とする。","n-3系脂肪酸の効果は全ての研究で一致している。","レジスタンス運動と栄養療法を組み合わせる。","栄養不足が原因でも栄養状態を評価しない。"],"answer":4,"answerText":"4. レジスタンス運動と栄養療法を組み合わせる。","explanation":"正答: 4\n1: ロイシンなどの栄養介入が示される。\n2: レジスタンス運動も重要である。\n3: 資料ではエビデンスは一致していないとされる。\n4: 資料では運動と栄養、ロイシンなどを組み合わせた介入が示される。\n5: 栄養関連の要因を評価する必要がある。","referencePage":"158,159,160,161","referenceQuestion":"55","excelRow":138},{"id":"q138","quizNumber":138,"question":"サルコペニアに関する説明として適切なものを1つ選べ。","choices":["n-3系脂肪酸で全例確実に改善する。","筋肉への脂肪浸潤がみられる。","筋肉の変化は脂肪化ではなく線維化だけである。","栄養不足によるものは一次性に限られる。","レジスタンス運動は治療に用いない。"],"answer":2,"answerText":"2. 筋肉への脂肪浸潤がみられる。","explanation":"正答: 2\n1: 資料では効果のエビデンスは一定していない。\n2: 資料では筋肉の脂肪化が説明される。\n3: 資料では脂肪化が示されている。\n4: 栄養関連は二次性に分類される。\n5: レジスタンス運動は介入に用いられる。","referencePage":"158,159,160,161","referenceQuestion":"55","excelRow":139},{"id":"q139","quizNumber":139,"question":"AWGS2019で筋力低下を評価する指標を1つ選べ。","choices":["SPPBだけ","握力","歩行速度だけ","骨格筋量指数だけ","5回椅子立ち上がり時間だけ"],"answer":2,"answerText":"2. 握力","explanation":"正答: 2\n1: SPPBは身体機能の評価に用いる。\n2: 筋力は握力で評価する。\n3: 歩行速度は身体機能の指標である。\n4: SMIは筋肉量の指標である。\n5: 椅子立ち上がりは身体機能の評価に用いる。","referencePage":"158,159,160,161","referenceQuestion":"56","excelRow":140},{"id":"q140","quizNumber":140,"question":"資料に示されたAWGS2019の握力低下の基準を1つ選べ。","choices":["男女とも28kg未満","男女とも18kg未満","男性28kg以上、女性18kg以上","男性28kg未満、女性18kg未満","男性18kg未満、女性28kg未満"],"answer":4,"answerText":"4. 男性28kg未満、女性18kg未満","explanation":"正答: 4\n1: 女性は18kg未満である。\n2: 男性は28kg未満である。\n3: 低下の判定は未満である。\n4: この男女別の基準が示されている。\n5: 男女の値が逆である。","referencePage":"158,159,160,161","referenceQuestion":"56","excelRow":141},{"id":"q141","quizNumber":141,"question":"SPPBに関する説明として適切なものを1つ選べ。","choices":["握力だけを12回測定する。","骨格筋量だけを評価する。","バランス、歩行、椅子立ち上がりを評価し、得点が高いほど機能が良い。","0～12点で、低いほど身体機能が良い。","9点以下なら身体機能低下は否定できる。"],"answer":3,"answerText":"3. バランス、歩行、椅子立ち上がりを評価し、得点が高いほど機能が良い。","explanation":"正答: 3\n1: SPPBは握力の反復測定ではない。\n2: 身体機能の評価である。\n3: SPPBは3項目からなり、0～12点で評価する。\n4: 高得点ほど機能が良い。\n5: 資料では9点以下を機能低下の基準とする。","referencePage":"158,159,160,161","referenceQuestion":"56","excelRow":142},{"id":"q142","quizNumber":142,"question":"改訂J-CHS基準で5項目中2項目に該当した場合の判定を1つ選べ。","choices":["プレフレイル","該当項目がない状態","BMIだけで再判定する。","骨格筋量指数だけで確定する。","フレイル"],"answer":1,"answerText":"1. プレフレイル","explanation":"正答: 1\n1: 1～2項目該当はプレフレイル、3項目以上はフレイルである。\n2: 2項目該当しているので該当なしではない。\n3: 改訂J-CHSは5項目の該当数を用いる。\n4: SMIはこの5項目に含まれない。\n5: フレイルは3項目以上である。","referencePage":"163,164","referenceQuestion":"57","excelRow":143},{"id":"q143","quizNumber":143,"question":"改訂J-CHS基準の項目だけからなる組み合わせを1つ選べ。","choices":["体重減少、握力低下、記憶力低下、歩行速度低下、身体活動低下","BMI低下、握力低下、疲労感、歩行速度低下、身体活動低下","体重減少、SMI低下、疲労感、歩行速度低下、身体活動低下","体重減少、握力低下、疲労感、食欲低下、身体活動低下","体重減少、握力低下、疲労感、歩行速度低下、身体活動低下"],"answer":5,"answerText":"5. 体重減少、握力低下、疲労感、歩行速度低下、身体活動低下","explanation":"正答: 5\n1: 記憶力はこの基準の項目ではない。\n2: BMIは5項目に含まれない。\n3: SMIは5項目に含まれない。\n4: 食欲はこの基準の項目ではない。\n5: これらが5項目である。","referencePage":"163,164","referenceQuestion":"57","excelRow":144},{"id":"q144","quizNumber":144,"question":"フレイルの概念について適切なものを1つ選べ。","choices":["身体面だけでなく精神・心理面や社会面を含み、改善しうる。","精神・心理面は含まない。","身体機能だけを扱い、社会面は含まない。","改訂J-CHSでは1項目だけでフレイルと判定する。","一度フレイルになれば改善は不可能である。"],"answer":1,"answerText":"1. 身体面だけでなく精神・心理面や社会面を含み、改善しうる。","explanation":"正答: 1\n1: フレイルは多面的で、可逆性をもつと説明される。\n2: 精神・心理面も含まれる。\n3: 社会面も含まれる。\n4: 1～2項目はプレフレイルである。\n5: 可逆性が示される。","referencePage":"163,164","referenceQuestion":"57","excelRow":145},{"id":"q145","quizNumber":145,"question":"長期間ほとんど食べていない患者に栄養投与を再開する前に補給を考慮するビタミンを1つ選べ。","choices":["ビタミンB1","ビタミンB12だけ","ビタミンAだけ","ビタミンDだけ","ビタミンKだけ"],"answer":1,"answerText":"1. ビタミンB1","explanation":"正答: 1\n1: 再栄養時はB1欠乏への対応が必要である。\n2: 資料では再栄養時にB1補給が示される。\n3: 資料の再栄養時の補給対象はB1である。\n4: 資料の再栄養時の補給対象はB1である。\n5: 資料の再栄養時の補給対象はB1である。","referencePage":"165,166,167","referenceQuestion":"58","excelRow":146},{"id":"q146","quizNumber":146,"question":"リフィーディング症候群で注意する電解質変化を1つ選べ。","choices":["リン、カリウム、マグネシウムの一律の上昇","リン、カリウム、マグネシウムの低下","リン低下は呼吸や心臓に影響しない。","リンだけが上昇し、他は変化しない。","カリウムとマグネシウムだけが上昇する。"],"answer":2,"answerText":"2. リン、カリウム、マグネシウムの低下","explanation":"正答: 2\n1: 資料では低下に注意するとされる。\n2: インスリン作用による細胞内移動などでこれらが低下する。\n3: 低リン血症は呼吸不全や不整脈に関わる。\n4: リン低下とK・Mg低下に注意する。\n5: 両者の低下に注意する。","referencePage":"165,166,167","referenceQuestion":"58","excelRow":147},{"id":"q147","quizNumber":147,"question":"リフィーディング症候群の高リスク患者の栄養開始量と観察について適切なものを1つ選べ。","choices":["低リン血症でも心電図の監視は不要である。","5kcal/kg/日程度から開始し、電解質や心電図を監視する。","電解質測定は1週間後まで不要である。","初日から必要量全量を急速投与する。","蛋白質を完全に除くことが必須である。"],"answer":2,"answerText":"2. 5kcal/kg/日程度から開始し、電解質や心電図を監視する。","explanation":"正答: 2\n1: 不整脈に注意して監視する。\n2: 資料では高リスク例で5kcal/kg/日から開始し、電解質や心電図を確認する。\n3: リン、K、Mgなどを毎日確認する。\n4: 少量から開始して5～7日程度かけて増量する。\n5: 資料では蛋白質制限を必須としていない。","referencePage":"165,166,167","referenceQuestion":"58","excelRow":148},{"id":"q148","quizNumber":148,"question":"神経性やせ症の栄養療法で投与経路を検討する順序として適切なものを1つ選べ。","choices":["経口摂取を基本に、必要に応じて経腸栄養、静脈栄養を検討する。","消化管が使えても必ず静脈栄養だけにする。","経口摂取は常に禁止する。","静脈栄養を全例で第一選択とする。","経腸栄養は選択肢に含めない。"],"answer":1,"answerText":"1. 経口摂取を基本に、必要に応じて経腸栄養、静脈栄養を検討する。","explanation":"正答: 1\n1: 経口を基本とし、経腸栄養、最後に静脈栄養を検討する。\n2: 経口・経腸の利用を先に検討する。\n3: 経口摂取を基本とする。\n4: 静脈栄養は最後に検討する。\n5: 経口で不足する場合には経腸栄養を検討する。","referencePage":"168,169","referenceQuestion":"59","excelRow":149},{"id":"q149","quizNumber":149,"question":"神経性やせ症で栄養投与を開始する際に適切なものを1つ選べ。","choices":["低いエネルギー量から開始し、段階的に増やす。","初日から大量投与し、1週間で5kg増量させる。","高リン血症だけを栄養再開の問題とする。","目標体重を全例標準体重の80%に固定する。","低リン血症は生じないため確認しない。"],"answer":1,"answerText":"1. 低いエネルギー量から開始し、段階的に増やす。","explanation":"正答: 1\n1: 初期は必要量の半分未満などの低量から慎重に増量する。\n2: 資料の体重増加目安は週0.5～1kgである。\n3: 資料では低リン血症に注意するとされる。\n4: 目標体重は個別に設定する。\n5: リフィーディングに伴う低リン血症に注意する。","referencePage":"168,169","referenceQuestion":"59","excelRow":150},{"id":"q150","quizNumber":150,"question":"神経性やせ症の体重回復計画として適切なものを1つ選べ。","choices":["目標体重を必ず標準体重の80%に固定する。","体重増加を急ぐため電解質変化は確認しない。","栄養投与量は初日から一定の全量とする。","週5kg増加を全例の目標とする。","週0.5～1kg程度の増加を目安に、個別の目標を設定する。"],"answer":5,"answerText":"5. 週0.5～1kg程度の増加を目安に、個別の目標を設定する。","explanation":"正答: 5\n1: 目標は個別に設定する。\n2: 低リン血症などに注意する。\n3: 低量から段階的に増やす。\n4: 資料の目安は週0.5～1kgである。\n5: 資料はこの増加目安と個別の目標体重設定を示す。","referencePage":"168,169","referenceQuestion":"59","excelRow":151},{"id":"q151","quizNumber":151,"question":"集中治療患者で早期経腸栄養を開始する条件として適切なものを1つ選べ。","choices":["敗血症では免疫賦活型製剤を必ず選ぶ。","昇圧薬が増量中でも循環の評価を省略する。","循環が安定してから24～48時間以内の開始を検討する。","開始日から必要エネルギーを必ず全量投与する。","平均血圧が60mmHg未満でも必ず全量開始する。"],"answer":3,"answerText":"3. 循環が安定してから24～48時間以内の開始を検討する。","explanation":"正答: 3\n1: 資料では敗血症での免疫賦活型製剤は推奨されない。\n2: 昇圧薬増量中などの不安定状態に注意する。\n3: 資料は循環安定後の早期経腸栄養を示す。\n4: 初期は低量投与から段階的に増やす。\n5: 循環不安定時には経腸栄養を避ける。","referencePage":"170,171,172","referenceQuestion":"60","excelRow":152},{"id":"q152","quizNumber":152,"question":"集中治療での経腸栄養の効果を評価する説明として適切なものを1つ選べ。","choices":["経腸栄養の開始に循環状態は関係しない。","感染症の減少が示されても、死亡率低下まで確定したとはいえない。","経腸栄養は不安定な循環の治療を常に優先できる。","感染症が減れば死亡率低下は必ず証明されたことになる。","初期の低量投与は行わない。"],"answer":2,"answerText":"2. 感染症の減少が示されても、死亡率低下まで確定したとはいえない。","explanation":"正答: 2\n1: 循環安定を確認する。\n2: 資料は感染症への効果と死亡率への効果を区別している。\n3: 循環の安定化を優先する。\n4: 感染症と死亡率は分けて評価する。\n5: 初期は低量から増量することが示される。","referencePage":"170,171,172","referenceQuestion":"60","excelRow":153},{"id":"q153","quizNumber":153,"question":"昇圧薬を増量中で平均血圧が60mmHg未満の患者への栄養対応を1つ選べ。","choices":["栄養投与だけで循環の安定化に代える。","経腸栄養を直ちに全量投与する。","昇圧薬の状況を確認せず増量する。","免疫賦活型製剤なら循環不全でも安全に全量投与できる。","循環の安定化を優先し、経腸栄養開始を慎重に判断する。"],"answer":5,"answerText":"5. 循環の安定化を優先し、経腸栄養開始を慎重に判断する。","explanation":"正答: 5\n1: 循環管理を優先する。\n2: 循環不安定時は開始を避ける。\n3: 昇圧薬増量中は不安定状態として注意する。\n4: 製剤の選択で循環不全への注意が不要になるわけではない。\n5: 不安定な循環では腸管灌流の問題があり、安定化を優先する。","referencePage":"170,171,172","referenceQuestion":"60","excelRow":154},{"id":"q154","quizNumber":154,"question":"ノルアドレナリン投与中でも血圧65/45mmHgが持続する重症患者で、優先する対応を1つ選べ。","choices":["血圧の推移を確認せず経腸栄養を開始する。","昇圧薬の調整などにより循環を安定させる。","静脈栄養の開始を循環管理より優先する。","経腸栄養を直ちに全量開始する。","経腸栄養剤を増量して低血圧を治療する。"],"answer":2,"answerText":"2. 昇圧薬の調整などにより循環を安定させる。","explanation":"正答: 2\n1: 循環状態を確認して開始を判断する。\n2: 資料の症例では昇圧薬増量など循環管理が優先される。\n3: 栄養投与より循環の安定化が先である。\n4: 循環不安定時の開始は避ける。\n5: まず循環管理を行う。","referencePage":"170,171,172","referenceQuestion":"61","excelRow":155},{"id":"q155","quizNumber":155,"question":"循環不全が続く患者で経腸栄養を急がない理由として適切なものを1つ選べ。","choices":["血圧65/45mmHgなら循環は安定しているから。","非閉塞性腸間膜虚血の危険に配慮するため。","循環不全は腸管への血流と無関係だから。","栄養剤が昇圧薬の代わりになるから。","静脈栄養なら循環管理自体が不要になるから。"],"answer":2,"answerText":"2. 非閉塞性腸間膜虚血の危険に配慮するため。","explanation":"正答: 2\n1: 資料の症例では低血圧が持続し循環不安定である。\n2: 資料では循環不安定時のNOMIの危険が示される。\n3: 腸管灌流の障害に注意する必要がある。\n4: 昇圧薬などの循環管理を優先する。\n5: 静脈栄養に代えても循環管理は必要である。","referencePage":"170,171,172","referenceQuestion":"61","excelRow":156},{"id":"q156","quizNumber":156,"question":"低血圧が持続する重症患者で栄養開始時期を考える際に適切なものを1つ選べ。","choices":["血圧低下は経腸栄養を増量する根拠となる。","入院後の時間だけで経腸栄養を必ず開始する。","早期栄養の方針より、現時点の循環安定性を優先して判断する。","NOMIの危険は低血圧と無関係である。","昇圧薬を増量していることは判断材料にしない。"],"answer":3,"answerText":"3. 早期栄養の方針より、現時点の循環安定性を優先して判断する。","explanation":"正答: 3\n1: 循環不安定時は経腸栄養を避ける。\n2: 循環状態の確認が必要である。\n3: 資料では低血圧の持続時に循環管理を優先する。\n4: 資料では循環不全時のNOMIに注意する。\n5: 昇圧薬の必要量は循環状態を判断する材料となる。","referencePage":"170,171,172","referenceQuestion":"61","excelRow":157},{"id":"q157","quizNumber":157,"question":"重症急性膵炎で消化管が利用可能な場合の栄養管理を1つ選べ。","choices":["全例で腸管を使わず長期絶食とする。","脂肪乳剤の静脈投与は絶対禁忌である。","プロバイオティクスを全例で推奨する。","免疫賦活型製剤を全例で必須とする。","早期の経腸栄養を検討する。"],"answer":5,"answerText":"5. 早期の経腸栄養を検討する。","explanation":"正答: 5\n1: 利用可能な消化管には早期経腸栄養を検討する。\n2: 資料では絶対禁忌とはしていない。\n3: 資料では推奨されない。\n4: 資料では推奨されない。\n5: 早期経腸栄養は感染性膵壊死などの減少に関わる。","referencePage":"173,174","referenceQuestion":"62","excelRow":158},{"id":"q158","quizNumber":158,"question":"急性膵炎患者への経腸栄養経路の検討として適切なものを1つ選べ。","choices":["胃内停滞があっても空腸経路は使えない。","全例で胃内投与は不可能である。","腸管虚血があっても投与を継続する。","腸閉塞があっても胃内に全量投与する。","胃内投与も可能で、胃内停滞があれば空腸投与を検討する。"],"answer":5,"answerText":"5. 胃内投与も可能で、胃内停滞があれば空腸投与を検討する。","explanation":"正答: 5\n1: 胃内停滞時に空腸投与を検討する。\n2: 胃内投与も可能とされる。\n3: 腸管虚血では経腸栄養は禁忌となる。\n4: 腸閉塞は経腸栄養の禁忌に含まれる。\n5: 胃内投与が可能で、胃排出障害時などに空腸経路を検討する。","referencePage":"173,174","referenceQuestion":"62","excelRow":159},{"id":"q159","quizNumber":159,"question":"経腸栄養の禁忌として資料に挙げられた病態の組み合わせを1つ選べ。","choices":["急性膵炎という診断だけ、胃内投与という経路だけ","腸閉塞、消化管穿孔、腸管虚血","脂肪乳剤を使用したことだけ","感染性膵壊死の予防を目的とすることだけ","胃内停滞だけで全ての経腸経路を禁忌とする。"],"answer":2,"answerText":"2. 腸閉塞、消化管穿孔、腸管虚血","explanation":"正答: 2\n1: 急性膵炎での早期経腸栄養や胃内投与は可能である。\n2: これらは経腸栄養の禁忌として示される。\n3: 脂肪乳剤は急性膵炎で絶対禁忌ではない。\n4: 早期経腸栄養は感染性膵壊死の減少に関わる。\n5: 空腸投与を検討できる。","referencePage":"173,174","referenceQuestion":"62","excelRow":160},{"id":"q160","quizNumber":160,"question":"慢性膵炎の代償期で腹痛がある場合の食事管理を1つ選べ。","choices":["禁煙は行うが飲酒は制限しない。","脂肪を制限し、禁酒・禁煙を行う。","疼痛があっても脂肪を無制限に増やす。","非代償期の栄養方針を疼痛の有無にかかわらず一律に適用する。","禁酒は行うが喫煙は管理対象としない。"],"answer":2,"answerText":"2. 脂肪を制限し、禁酒・禁煙を行う。","explanation":"正答: 2\n1: 禁酒も必要である。\n2: 代償期では疼痛に配慮した脂肪制限と禁酒・禁煙が示される。\n3: 代償期の疼痛には脂肪制限を行う。\n4: 病期や症状に応じて食事管理を変える。\n5: 禁煙も必要である。","referencePage":"175,176,177,178","referenceQuestion":"63","excelRow":161},{"id":"q161","quizNumber":161,"question":"脂肪便を伴う慢性膵炎の非代償期で適切な方針を1つ選べ。","choices":["十分なエネルギーを確保し、膵消化酵素を補充する。","非代償期は必ず腹痛が強いため、脂肪便を評価しない。","脂肪とエネルギーをできるだけ減らすことだけを優先する。","MCTは利用できない。","膵消化酵素を補充しない。"],"answer":1,"answerText":"1. 十分なエネルギーを確保し、膵消化酵素を補充する。","explanation":"正答: 1\n1: 非代償期では栄養不足に対応し、酵素補充やMCT利用を検討する。\n2: 非代償期では疼痛が減り、脂肪便などの機能低下が問題となる。\n3: 十分な栄養確保が重要である。\n4: 資料ではMCT利用が示される。\n5: 消化吸収障害に対し酵素補充を行う。","referencePage":"175,176,177,178","referenceQuestion":"63","excelRow":162},{"id":"q162","quizNumber":162,"question":"慢性膵炎に伴う糖尿病で低血糖に注意する理由を1つ選べ。","choices":["栄養投与を全く行わないことが基本だから。","膵内分泌機能は必ず正常だから。","非代償期には消化吸収障害がないから。","グルカゴン分泌が必ず過剰になるため。","グルカゴン分泌も低下するため。"],"answer":5,"answerText":"5. グルカゴン分泌も低下するため。","explanation":"正答: 5\n1: 非代償期では十分な栄養確保が必要である。\n2: 非代償期には糖尿病などの内分泌機能低下が起こる。\n3: 脂肪便などの吸収障害を伴う。\n4: 資料では分泌低下が説明される。\n5: 資料ではグルカゴン低下による低血糖への注意が説明される。","referencePage":"175,176,177,178","referenceQuestion":"63","excelRow":163},{"id":"q163","quizNumber":163,"question":"肝硬変患者の夜間のエネルギー不足を補う方法を1つ選べ。","choices":["黄疸の有無にかかわらず脂質を全く禁止する。","夕食以降は必ず長時間絶食させる。","全例でエネルギーを大幅に減らす。","就寝前補食を行う。","腹水があれば全ての栄養素を完全に除く。"],"answer":4,"answerText":"4. 就寝前補食を行う。","explanation":"正答: 4\n1: 脂質制限は黄疸などの状態を考慮する。\n2: 夜間の飢餓を軽減するためLESを用いる。\n3: 肝硬変では蛋白・エネルギー低栄養に注意する。\n4: LESは夜間の飢餓状態への対策として示される。\n5: 腹水には食塩制限を行うが過度な栄養制限に注意する。","referencePage":"179,180","referenceQuestion":"64","excelRow":164},{"id":"q164","quizNumber":164,"question":"腹水を伴う肝硬変の食事管理として適切なものを1つ選べ。","choices":["腹水があっても食塩を増量する。","全例で蛋白質・エネルギーを極端に減らす。","食塩を制限しつつ、過度の制限による摂取不足に注意する。","黄疸のある患者でも脂質摂取の評価は不要である。","夜間補食を行わず長時間絶食を優先する。"],"answer":3,"answerText":"3. 食塩を制限しつつ、過度の制限による摂取不足に注意する。","explanation":"正答: 3\n1: 腹水には食塩制限が必要である。\n2: 蛋白・エネルギー低栄養に注意する。\n3: 腹水には食塩制限を行うが、栄養不良を招く過度の制限を避ける。\n4: 黄疸に応じて脂質制限を考慮する。\n5: 資料ではLESが示される。","referencePage":"179,180","referenceQuestion":"64","excelRow":165},{"id":"q165","quizNumber":165,"question":"肝性脳症の栄養管理で資料に示されたアミノ酸製剤を1つ選べ。","choices":["分岐鎖アミノ酸を利用する。","BCAAを全く含まないことだけを目標とする。","肝硬変では低栄養を考慮しない。","肝性脳症ではアンモニアを評価しない。","劇症肝炎の昏睡期でも通常量の蛋白質を必ず増量する。"],"answer":1,"answerText":"1. 分岐鎖アミノ酸を利用する。","explanation":"正答: 1\n1: BCAAは肝性脳症やアンモニア代謝への対応に用いる。\n2: 資料ではBCAAの利用が示される。\n3: 蛋白・エネルギー低栄養に注意する。\n4: アンモニアへの配慮が必要である。\n5: 劇症肝炎の昏睡期では蛋白投与を避ける。","referencePage":"179,180","referenceQuestion":"64","excelRow":166},{"id":"q166","quizNumber":166,"question":"意識障害を伴う肝硬変患者で、血中アンモニア235μg/dL、血糖40mg/dLだった。資料に沿った初期の栄養経路・製剤選択を1つ選べ。","choices":["意識障害があるまま通常食を経口投与する。","アンモニア高値を考慮せず栄養投与だけを増やす。","初期から通常の高カロリー輸液を全量開始する。","分岐鎖アミノ酸製剤の静脈投与を検討する。","経口BCAAを意識状態にかかわらず直ちに飲ませる。"],"answer":4,"answerText":"4. 分岐鎖アミノ酸製剤の静脈投与を検討する。","explanation":"正答: 4\n1: 意識障害時には経口摂取の安全性に問題がある。\n2: 肝性脳症とアンモニアへの対応が必要である。\n3: 直ちに通常の高カロリー輸液を行う方針ではない。\n4: 経口摂取が難しく、肝性脳症への対応としてBCAA静注が示される。\n5: 資料の症例では静脈投与を選ぶ。","referencePage":"182,183,184","referenceQuestion":"65","excelRow":167},{"id":"q167","quizNumber":167,"question":"大量飲酒歴のある肝硬変患者に栄養投与を行う際、資料で経験的補給が示されたものを1つ選べ。","choices":["ビタミンB12だけ","ビタミンKだけ","ビタミンAだけ","ビタミンB1","ビタミンDだけ"],"answer":4,"answerText":"4. ビタミンB1","explanation":"正答: 4\n1: 資料では経験的補給としてB1が示される。\n2: 資料ではB1への対応が示される。\n3: 資料ではB1への対応が示される。\n4: 飲酒歴などを考慮してB1を経験的に補給する。\n5: 資料ではB1への対応が示される。","referencePage":"182,183,184","referenceQuestion":"65","excelRow":168},{"id":"q168","quizNumber":168,"question":"肝性脳症を伴う肝硬変の症例への対応として適切なものを1つ選べ。","choices":["アンモニア235μg/dLを栄養管理上無視する。","血糖40mg/dLを正常値として扱う。","飲酒歴があってもB1補給を考慮しない。","ラクツロースの使用を検討する。","意識障害があっても経口摂取の安全性は問題にならない。"],"answer":4,"answerText":"4. ラクツロースの使用を検討する。","explanation":"正答: 4\n1: 肝性脳症に対応した栄養管理が必要である。\n2: 資料の症例では低血糖への対応が必要である。\n3: 資料では経験的B1補給が示される。\n4: 資料では肝性脳症への治療としてラクツロースが示される。\n5: 意識障害時の経口摂取には注意が必要である。","referencePage":"182,183,184","referenceQuestion":"65","excelRow":169},{"id":"q169","quizNumber":169,"question":"ERASに沿った術後管理として適切なものを1つ選べ。","choices":["術後は全例で長期間の臥床を続ける。","早期離床と早期経口摂取を進める。","オピオイドをできるだけ多く使用する。","ドレーンはできるだけ多く長期間留置する。","術後は全例で長期絶食を続ける。"],"answer":2,"answerText":"2. 早期離床と早期経口摂取を進める。","explanation":"正答: 2\n1: 早期離床を進める。\n2: ERASでは早期離床・経口摂取が示される。\n3: オピオイド使用を最小限にする。\n4: ドレーン使用は最小限とする。\n5: 早期経口摂取を進める。","referencePage":"185,186,187,188","referenceQuestion":"66","excelRow":170},{"id":"q170","quizNumber":170,"question":"資料に示された手術前の絶飲食時間の組み合わせを1つ選べ。","choices":["固形物6時間、清澄水2時間","固形物も清澄水も24時間","固形物2時間、清澄水6時間","固形物6時間、清澄水12時間","固形物も清澄水も2時間"],"answer":1,"answerText":"1. 固形物6時間、清澄水2時間","explanation":"正答: 1\n1: 資料では固形物6時間、清澄水2時間が示される。\n2: 資料の時間は6時間と2時間である。\n3: 固形物と清澄水の時間が逆である。\n4: 清澄水は2時間である。\n5: 固形物は6時間である。","referencePage":"185,186,187,188","referenceQuestion":"66","excelRow":171},{"id":"q171","quizNumber":171,"question":"周術期の栄養・輸液管理について適切なものを1つ選べ。","choices":["ERASでは術後の経口摂取を一律に遅らせる。","術前低栄養でも栄養療法は行わない。","ERASでは離床より長期臥床を優先する。","過剰な輸液で生じる浮腫は回復に有利である。","術前低栄養例では7～10日間の栄養療法を考慮する。"],"answer":5,"answerText":"5. 術前低栄養例では7～10日間の栄養療法を考慮する。","explanation":"正答: 5\n1: 早期経口摂取が示される。\n2: 術前の栄養改善を考慮する。\n3: 早期離床を進める。\n4: 過剰輸液による浮腫を避ける。\n5: 資料では低栄養例の術前栄養療法として7～10日間が示される。","referencePage":"185,186,187,188","referenceQuestion":"66","excelRow":172},{"id":"q172","quizNumber":172,"question":"術後に嘔吐と多量の胃内容排液があり、腸閉塞が疑われる患者の栄養管理を1つ選べ。","choices":["絶食と減圧を行い、静脈栄養を検討する。","排液量にかかわらず輸液を行わない。","嘔吐していても通常食を継続する。","減圧を行わず栄養剤だけを増量する。","経腸栄養を直ちに全量開始する。"],"answer":1,"answerText":"1. 絶食と減圧を行い、静脈栄養を検討する。","explanation":"正答: 1\n1: 資料では絶食・消化管減圧・輸液と静脈栄養が示される。\n2: 水分・電解質の補正が必要である。\n3: 絶食と減圧を行う。\n4: 消化管の減圧が必要である。\n5: 腸閉塞時は経腸栄養を行わない。","referencePage":"189,190,191,192","referenceQuestion":"67","excelRow":173},{"id":"q173","quizNumber":173,"question":"胃内容を800mL/8時間排出し、血清Na125mEq/L、Cl92mEq/Lの術後患者で対応すべき問題を1つ選べ。","choices":["Cl92mEq/Lを高クロール血症と判断する。","水分・電解質の喪失","水分過剰だけと判断して補液を一律に禁止する。","胃内容排液は水分量の評価に含めない。","Na125mEq/Lを高ナトリウム血症と判断する。"],"answer":2,"answerText":"2. 水分・電解質の喪失","explanation":"正答: 2\n1: 資料の症例では低Clに対応する。\n2: 資料の症例では排液による水分・電解質不足の補正が必要である。\n3: 多量排液による喪失を考慮する。\n4: 排液量を評価して補正する。\n5: 資料の症例では低Naに対応する。","referencePage":"189,190,191,192","referenceQuestion":"67","excelRow":174},{"id":"q174","quizNumber":174,"question":"腸閉塞・イレウスに関する理解として適切なものを1つ選べ。","choices":["嘔吐と大量排液があっても減圧は考慮しない。","全てが機械的閉塞だけである。","通過障害があっても経腸栄養を全量投与する。","全てが機能的障害だけである。","機械的閉塞と機能的な通過障害を区別する。"],"answer":5,"answerText":"5. 機械的閉塞と機能的な通過障害を区別する。","explanation":"正答: 5\n1: 減圧を行う。\n2: 機能的な通過障害もある。\n3: 腸閉塞時は絶食と静脈栄養を検討する。\n4: 機械的閉塞もある。\n5: 資料では機械的閉塞と機能的イレウスが説明される。","referencePage":"189,190,191,192","referenceQuestion":"67","excelRow":175},{"id":"q175","quizNumber":175,"question":"胃全摘後16年、MCV131fL、Hb5.1g/dLで鉄は正常の患者の病態について適切なものを1つ選べ。","choices":["後期ダンピングだけでこの貧血を説明できる。","ビタミンB12欠乏による巨赤芽球性貧血を考える。","鉄欠乏による小球性貧血だけを考える。","早期ダンピングだけでこの貧血を説明できる。","B12吸収は胃と無関係なので欠乏を除外する。"],"answer":2,"answerText":"2. ビタミンB12欠乏による巨赤芽球性貧血を考える。","explanation":"正答: 2\n1: 後期ダンピングは食後低血糖が中心である。\n2: 胃切除による内因子不足はB12欠乏と巨赤芽球性貧血を起こす。\n3: 資料の症例は鉄が正常で、大球性の貧血を示している。\n4: 早期ダンピングの説明は食後の体液移動であり、この貧血はB12欠乏に関連する。\n5: 胃の内因子がB12吸収に必要である。","referencePage":"193,194,195,196","referenceQuestion":"68","excelRow":176},{"id":"q176","quizNumber":176,"question":"胃切除後にB12欠乏が遅れて現れる理由として適切なものを1つ選べ。","choices":["胃を切除すると回腸で内因子を大量に作るため。","B12は結腸で吸収されるため。","内因子はB12吸収に不要だから。","肝臓に数年分のB12が貯蔵されているため。","B12の貯蔵は9～18日で必ず枯渇するため。"],"answer":4,"answerText":"4. 肝臓に数年分のB12が貯蔵されているため。","explanation":"正答: 4\n1: 内因子は胃で作られ、回腸でのB12吸収に関わる。\n2: 主な吸収部位は回腸末端である。\n3: 内因子はB12吸収に必要である。\n4: 資料では肝臓の貯蔵により欠乏まで約5年を要することが説明される。\n5: 資料ではB12は約5年分の貯蔵があるとされる。","referencePage":"193,194,195,196","referenceQuestion":"68","excelRow":177},{"id":"q177","quizNumber":177,"question":"胃切除後の早期・後期ダンピングの比較として適切なものを1つ選べ。","choices":["後期は高血糖が持続することだけが特徴である。","早期も後期もB12欠乏だけが原因である。","早期は食後15～30分の体液移動、後期は食後2～3時間の低血糖が関わる。","早期は食後の体液移動と関係しない。","早期は食後2～3時間、後期は食後15～30分である。"],"answer":3,"answerText":"3. 早期は食後15～30分の体液移動、後期は食後2～3時間の低血糖が関わる。","explanation":"正答: 3\n1: 後期では反応性の低血糖が問題となる。\n2: 早期は体液移動、後期はインスリンによる低血糖に関わる。\n3: 資料ではこの時間帯と機序の違いが説明される。\n4: 急速な流入による体液移動が関わる。\n5: 時間帯が逆である。","referencePage":"193,194,195,196","referenceQuestion":"68","excelRow":178},{"id":"q178","quizNumber":178,"question":"がん悪液質の特徴として適切なものを1つ選べ。","choices":["筋肉量は必ず増加する。","終末期でも必要エネルギーは必ず増え続ける。","栄養補給だけで必ず完全に回復する。","筋肉量が減少し、栄養補給だけでは十分に回復しない。","病期による段階は存在しない。"],"answer":4,"answerText":"4. 筋肉量が減少し、栄養補給だけでは十分に回復しない。","explanation":"正答: 4\n1: 筋肉量減少が特徴である。\n2: 最期の3～4週には必要量が減少するとされる。\n3: 栄養だけで十分に回復する病態ではない。\n4: 悪液質では代謝変化と筋肉喪失があり、通常の栄養療法だけでは回復が難しい。\n5: 前悪液質、悪液質、不可逆的悪液質の段階が示される。","referencePage":"197,198,199,200","referenceQuestion":"69","excelRow":179},{"id":"q179","quizNumber":179,"question":"がん悪液質でみられる代謝変化の組み合わせを1つ選べ。","choices":["筋蛋白合成だけが著明に亢進する。","Cori回路によるエネルギー消費は増えない。","インスリン抵抗性は生じない。","蛋白分解と脂肪分解が亢進し、インスリン抵抗性を伴う。","蛋白分解と脂肪分解がともに抑制される。"],"answer":4,"answerText":"4. 蛋白分解と脂肪分解が亢進し、インスリン抵抗性を伴う。","explanation":"正答: 4\n1: 筋蛋白合成は低下し、分解が亢進する。\n2: 資料ではCori回路の亢進が示される。\n3: 抵抗性を伴う。\n4: 資料では筋蛋白・脂肪の分解亢進とインスリン抵抗性が示される。\n5: 両者は亢進する。","referencePage":"197,198,199,200","referenceQuestion":"69","excelRow":180},{"id":"q180","quizNumber":180,"question":"がん悪液質の栄養投与量と病期への配慮について適切なものを1つ選べ。","choices":["筋蛋白分解がないので蛋白質の評価は不要である。","不可逆的悪液質でも栄養量増加だけで回復を保証する。","最期の3～4週もエネルギー必要量は必ず増える。","蛋白質2.5g/kg/日で予後改善が必ず証明されている。","蛋白質1～1.5g/kg/日を目安とし、終末期には必要量低下を考慮する。"],"answer":5,"answerText":"5. 蛋白質1～1.5g/kg/日を目安とし、終末期には必要量低下を考慮する。","explanation":"正答: 5\n1: 筋蛋白分解が亢進している。\n2: 不可逆的な段階では栄養だけで回復は望めない。\n3: 資料では減少するとされる。\n4: 2.5g/kg/日の有効性は確立していない。\n5: 資料にこの蛋白質目安と最期の3～4週の必要量低下が示される。","referencePage":"197,198,199,200","referenceQuestion":"69","excelRow":181},{"id":"q181","quizNumber":181,"question":"予後約2週間のがん患者が静脈栄養中に5.3kg増加し、浮腫を認める。対応として適切なものを1つ選べ。","choices":["予後が短くても水分量の評価は不要とする。","患者の希望にかかわらず投与量を増やす。","体重増加を筋肉増加と断定して輸液を増やす。","輸液量を減らすことを検討し、苦痛の軽減を重視する。","栄養量を増やせば浮腫は必ず改善すると説明する。"],"answer":4,"answerText":"4. 輸液量を減らすことを検討し、苦痛の軽減を重視する。","explanation":"正答: 4\n1: 水分過剰による苦痛を考慮する。\n2: 患者の意思やQOLを重視する。\n3: 浮腫を伴う体重増加は体液貯留を考慮する。\n4: 資料の症例では過剰輸液への対応とQOL・安楽を優先する。\n5: 資料では輸液量の減量を検討する。","referencePage":"201,202","referenceQuestion":"70","excelRow":182},{"id":"q182","quizNumber":182,"question":"終末期がん患者で浮腫を伴う体重増加を評価する際に適切なものを1つ選べ。","choices":["アルブミン2.6g/dLなら輸液増量だけで正常化を保証できる。","体重が増えれば栄養状態は必ず改善している。","体液貯留の可能性を考え、栄養状態の改善と即断しない。","予後約2週間でもQOLは評価しない。","浮腫があれば必ずさらに水分を増やす。"],"answer":3,"answerText":"3. 体液貯留の可能性を考え、栄養状態の改善と即断しない。","explanation":"正答: 3\n1: 資料では単純な増量をせず安楽を優先する。\n2: 浮腫による体重増加を区別する。\n3: 資料の症例では体重増加と浮腫は過剰輸液の評価につながる。\n4: QOLと苦痛軽減が重要である。\n5: 輸液量を減らすことを検討する。","referencePage":"201,202","referenceQuestion":"70","excelRow":183},{"id":"q183","quizNumber":183,"question":"終末期がん患者への静脈栄養の調整で重視する方針を1つ選べ。","choices":["体重増加だけを治療成功の指標とする。","浮腫が増えても輸液量を固定する。","患者の意思は考慮しない。","投与エネルギーを最大化することだけを目標とする。","本人の希望と苦痛を踏まえ、安楽を優先する。"],"answer":5,"answerText":"5. 本人の希望と苦痛を踏まえ、安楽を優先する。","explanation":"正答: 5\n1: 浮腫や苦痛も評価する。\n2: 資料の症例では減量を検討する。\n3: 患者の意思を重視する。\n4: 終末期では安楽や体液過剰への配慮が必要である。\n5: 資料では患者の意思、QOL、苦痛軽減を重視する。","referencePage":"201,202","referenceQuestion":"70","excelRow":184},{"id":"q184","quizNumber":184,"question":"資料の日本のメタボリックシンドローム診断基準について適切なものを1つ選べ。","choices":["血糖・血圧・脂質の全てを満たしても腹囲を確認しない。","腹囲にかかわらずLDL高値だけで診断する。","腹囲基準を満たしたうえで、脂質・血圧・血糖の3群中2群以上を満たす。","腹囲を満たせば他の1群だけで診断する。","腹囲だけで診断する。"],"answer":3,"answerText":"3. 腹囲基準を満たしたうえで、脂質・血圧・血糖の3群中2群以上を満たす。","explanation":"正答: 3\n1: 資料の日本基準では腹囲が必須である。\n2: 腹囲が必須で、LDLは該当する脂質基準ではない。\n3: 腹囲を必須とし、他の3群から2群以上を確認する。\n4: 2群以上が必要である。\n5: 他の3群から2群以上が必要である。","referencePage":"203,204,205","referenceQuestion":"71","excelRow":185},{"id":"q185","quizNumber":185,"question":"資料の日本基準で腹囲の判定値として適切な組み合わせを1つ選べ。","choices":["男性90cm以上、女性85cm以上","男女とも85cm以上","男性85cm未満、女性90cm未満","男性85cm以上、女性90cm以上","男女とも90cm以上"],"answer":4,"answerText":"4. 男性85cm以上、女性90cm以上","explanation":"正答: 4\n1: 男女の値が逆である。\n2: 女性は90cm以上である。\n3: 判定は未満ではなく以上である。\n4: 日本の基準ではこの男女別の値を用いる。\n5: 男性は85cm以上である。","referencePage":"203,204,205","referenceQuestion":"71","excelRow":186},{"id":"q186","quizNumber":186,"question":"メタボリックシンドロームの脂質異常の群に該当する所見を1つ選べ。","choices":["空腹時血糖110mg/dL以上だけ","LDL高値だけ","HDL40mg/dL以上だけ","中性脂肪150mg/dL未満だけ","中性脂肪150mg/dL以上またはHDL40mg/dL未満"],"answer":5,"answerText":"5. 中性脂肪150mg/dL以上またはHDL40mg/dL未満","explanation":"正答: 5\n1: これは血糖の群の項目である。\n2: LDLはこの診断基準の脂質項目ではない。\n3: HDLの基準は40mg/dL未満である。\n4: 中性脂肪の基準は150mg/dL以上である。\n5: 資料の脂質基準は中性脂肪とHDLである。","referencePage":"203,204,205","referenceQuestion":"71","excelRow":187},{"id":"q187","quizNumber":187,"question":"資料に示された肥満と高度肥満のBMIの区分を1つ選べ。","choices":["肥満は25未満、高度肥満は35未満","肥満は25以上、高度肥満は35以上","肥満は20以上、高度肥満は22以上","肥満は35以上、高度肥満は25以上","肥満と高度肥満はいずれも22以上"],"answer":2,"answerText":"2. 肥満は25以上、高度肥満は35以上","explanation":"正答: 2\n1: 資料では以上を用いる。\n2: 資料ではBMI25以上を肥満、35以上を高度肥満とする。\n3: 資料の区分は25以上と35以上である。\n4: 区分が逆である。\n5: 資料では異なる基準を用いる。","referencePage":"206,207,208","referenceQuestion":"72","excelRow":188},{"id":"q188","quizNumber":188,"question":"資料の肥満治療における初期減量目標として適切なものを1つ選べ。","choices":["体重減量は不要で運動だけを目標とする。","肥満では直ちに体重の50%を減らす。","肥満度にかかわらず最初からBMI22だけを目標とする。","高度肥満でも初期目標は1%未満とする。","肥満では3～5%、高度肥満では5～10%の減量を目安とする。"],"answer":5,"answerText":"5. 肥満では3～5%、高度肥満では5～10%の減量を目安とする。","explanation":"正答: 5\n1: 食事、運動、行動療法を組み合わせて減量を進める。\n2: 初期目標は3～5%である。\n3: 初期には達成可能な割合の減量を設定する。\n4: 資料の目安は5～10%である。\n5: 資料は肥満度に応じた初期減量目標を示す。","referencePage":"206,207,208","referenceQuestion":"72","excelRow":189},{"id":"q189","quizNumber":189,"question":"肥満の栄養療法と生活指導について適切なものを1つ選べ。","choices":["蛋白質は全く投与しない。","食事療法に運動と行動療法を組み合わせる。","運動や行動への働きかけは行わない。","脂肪1kgの減量に必要なエネルギー差は700kcalとする。","エネルギー制限だけを行い蛋白質の確保は考慮しない。"],"answer":2,"answerText":"2. 食事療法に運動と行動療法を組み合わせる。","explanation":"正答: 2\n1: 資料では目標体重当たり1～1.2g/kg/日を目安とする。\n2: 資料では食事、運動、行動療法の併用が示される。\n3: 運動と行動療法も併用する。\n4: 資料では約7000kcalとされる。\n5: 蛋白質の確保を考慮する。","referencePage":"206,207,208","referenceQuestion":"72","excelRow":190},{"id":"q190","quizNumber":190,"question":"身長160cm、体重103kgの肥満患者で、初期目標を体重の5%減とする。目安となる減量幅を1つ選べ。","choices":["約1kg","約25kg","約10kg","約5kg","約47kg"],"answer":4,"answerText":"4. 約5kg","explanation":"正答: 4\n1: 5%減は約5kgである。\n2: 指定された5%の計算と一致しない。\n3: 10%相当であり、指定の5%ではない。\n4: 103×0.05=5.15kgで、約5kgの減量を初期目標とする。\n5: BMI22相当体重との差であり、初期5%目標とは異なる。","referencePage":"206,207,209","referenceQuestion":"73","excelRow":191},{"id":"q191","quizNumber":191,"question":"身長160cmの患者でBMI22に相当する体重を計算するとき、適切な式を1つ選べ。","choices":["103×22","160×160×22","1.60×22","1.60×1.60×22","22÷1.60÷1.60"],"answer":4,"answerText":"4. 1.60×1.60×22","explanation":"正答: 4\n1: 現在の体重にBMIを掛ける式ではない。\n2: 身長をcmのまま用いる式ではない。\n3: 身長の二乗が必要である。\n4: 体重は身長mの二乗×BMIで求める。\n5: 体重を求める式は身長の二乗を掛ける。","referencePage":"206,207,209","referenceQuestion":"73","excelRow":192},{"id":"q192","quizNumber":192,"question":"BMI約40の肥満患者への目標設定として適切なものを1つ選べ。","choices":["身長160cmならBMI22相当体重は103kgである。","まず達成可能な減量割合を設定し、段階的に体重を下げる。","現体重103kgを必ず標準体重として固定する。","初期5%減量とは体重の50%を減らすことである。","直ちにBMI22相当体重まで下げることだけを短期目標にする。"],"answer":2,"answerText":"2. まず達成可能な減量割合を設定し、段階的に体重を下げる。","explanation":"正答: 2\n1: 1.60²×22=約56.3kgである。\n2: 資料の症例では初期に5%程度の減量を目標としている。\n3: 身長160cmのBMI22相当体重は約56.3kgである。\n4: 5%減量は103kgに対して約5kgである。\n5: 初期には段階的な減量目標を設定する。","referencePage":"206,207,209","referenceQuestion":"73","excelRow":193},{"id":"q193","quizNumber":193,"question":"身長160cmの肥満患者に、BMI22相当体重を用いて25kcal/kg/日を処方する。概算のエネルギー量を1つ選べ。","choices":["約3600kcal/日","約1400kcal/日","約700kcal/日","約2600kcal/日","約1000kcal/日"],"answer":2,"answerText":"2. 約1400kcal/日","explanation":"正答: 2\n1: 指定した式からは算出されない。\n2: 1.60²×22=56.32kg、56.32×25=1408kcal/日である。\n3: 指定した式による値は約1400kcal/日である。\n4: 現在体重103kgを用いた値に近く、指定の標準体重計算ではない。\n5: 標準体重約56.3kgに25を掛けると約1400kcal/日である。","referencePage":"206,207,209","referenceQuestion":"73","excelRow":194},{"id":"q194","quizNumber":194,"question":"BMI22相当体重を56.3kgとし、蛋白質1～1.2g/kg/日を確保する場合の目安量を1つ選べ。","choices":["約11～17g/日","約28～34g/日","約84～113g/日","約56～68g/日","約141～169g/日"],"answer":4,"answerText":"4. 約56～68g/日","explanation":"正答: 4\n1: 0.2～0.3g/kgに相当し、指定の範囲より少ない。\n2: 0.5～0.6g/kgに相当する。\n3: 1.5～2g/kgに相当する。\n4: 56.3×1～1.2=56.3～67.56g/日である。\n5: 2.5～3g/kgに相当する。","referencePage":"206,207,209","referenceQuestion":"73","excelRow":195},{"id":"q195","quizNumber":195,"question":"肥満患者への食事指導として、資料に沿ったものを1つ選べ。","choices":["初期目標を達成するため栄養量をゼロにする。","減量のため蛋白質を完全に除く。","欠食を基本として栄養バランスを評価しない。","エネルギー量は現在体重だけで計算し、標準体重は使わない。","必要な蛋白質を確保し、欠食などの極端な方法を避ける。"],"answer":5,"answerText":"5. 必要な蛋白質を確保し、欠食などの極端な方法を避ける。","explanation":"正答: 5\n1: 適切なエネルギー量を設定し栄養素を確保する。\n2: 標準体重当たり1～1.2g/kg/日を目安に確保する。\n3: 欠食などの極端な方法を避ける。\n4: 資料の症例では標準体重を用いて計算する。\n5: 適切なエネルギー制限と蛋白質確保を行い、欠食などを避ける。","referencePage":"206,207,209","referenceQuestion":"73","excelRow":196}];
+
+
+const jsWarning = document.getElementById("jsWarning");
+if(jsWarning) jsWarning.classList.add("hidden");
+const STORAGE_SELECTION = "nst_html_selected_v1";
+const STORAGE_HISTORY = "nst_html_history_v1";
+
+const $ = (id) => document.getElementById(id);
+const homeScreen = $("homeScreen");
+const quizScreen = $("quizScreen");
+const resultScreen = $("resultScreen");
+
+function safeLoad(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  }catch(e){ return fallback; }
+}
+function safeSave(key, value){
+  try{ localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch(e){ return false; }
+}
+
+let selectedIds = new Set();
+const storedSelection = safeLoad(STORAGE_SELECTION, null);
+if(Array.isArray(storedSelection)){
+  const valid = new Set(QUESTIONS.map(q=>q.id));
+  storedSelection.filter(id=>valid.has(id)).forEach(id=>selectedIds.add(id));
+}else{
+  QUESTIONS.forEach(q=>selectedIds.add(q.id));
+}
+
+let history = safeLoad(STORAGE_HISTORY, []);
+if(!Array.isArray(history)) history = [];
+
+let session = null;
+let lastSessionConfig = null;
+
+function formatDate(iso){
+  const d = new Date(iso);
+  if(Number.isNaN(d.getTime())) return "";
+  const p=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}/${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function byId(id){ return QUESTIONS.find(q=>q.id===id); }
+
+function updateHome(){
+  $("totalCount").textContent = `${QUESTIONS.length}問`;
+  $("selectedCount").textContent = `${selectedIds.size}問`;
+  $("historyCount").textContent = `${history.length}件`;
+  $("quizCount").max = Math.max(1,selectedIds.size);
+  let n = parseInt($("quizCount").value,10);
+  if(!Number.isFinite(n) || n<1) n=Math.min(20,Math.max(1,selectedIds.size));
+  if(n>selectedIds.size) n=selectedIds.size;
+  $("quizCount").value = Math.max(1,n);
+  $("countHint").textContent = selectedIds.size
+    ? `入力範囲: 1～${selectedIds.size}`
+    : "演習対象が0問です。「演習する問題を選択」から追加してください。";
+  renderHistory();
+  drawScoreChart();
+}
+function showScreen(name){
+  homeScreen.classList.toggle("hidden",name!=="home");
+  quizScreen.classList.toggle("hidden",name!=="quiz");
+  resultScreen.classList.toggle("hidden",name!=="result");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function openSelector(){
+  $("selectorModal").classList.remove("hidden");
+  $("selectorSearch").value="";
+  renderSelector();
+}
+function closeSelector(){
+  safeSave(STORAGE_SELECTION,[...selectedIds]);
+  $("selectorModal").classList.add("hidden");
+  updateHome();
+}
+function renderSelector(){
+  const term=$("selectorSearch").value.trim().toLowerCase();
+  const list=$("selectorList");
+  list.innerHTML="";
+  const frag=document.createDocumentFragment();
+
+  QUESTIONS.forEach(q=>{
+    const hay=`${q.quizNumber} ${q.question}`.toLowerCase();
+    if(term && !hay.includes(term)) return;
+    const row=document.createElement("label");
+    row.className="sel-row";
+    const cb=document.createElement("input");
+    cb.type="checkbox";
+    cb.checked=selectedIds.has(q.id);
+    cb.addEventListener("change",()=>{
+      cb.checked ? selectedIds.add(q.id) : selectedIds.delete(q.id);
+      $("selectorSelectedCount").textContent=`選択中: ${selectedIds.size} / ${QUESTIONS.length}問`;
+    });
+    const no=document.createElement("div");
+    no.innerHTML=`<span class="badge">問題${q.quizNumber}</span>`;
+    const qt=document.createElement("div");
+    qt.className="sel-q";
+    qt.textContent=q.question;
+    row.append(cb,no,qt);
+    frag.appendChild(row);
+  });
+  list.appendChild(frag);
+  $("selectorSelectedCount").textContent=`選択中: ${selectedIds.size} / ${QUESTIONS.length}問`;
+}
+function setAllSelection(value){
+  if(value) QUESTIONS.forEach(q=>selectedIds.add(q.id));
+  else selectedIds.clear();
+  renderSelector();
+}
+function invertSelection(){
+  QUESTIONS.forEach(q=>{
+    if(selectedIds.has(q.id)) selectedIds.delete(q.id);
+    else selectedIds.add(q.id);
+  });
+  renderSelector();
+}
+
+function startNormal(){
+  if(selectedIds.size===0){ alert("演習する問題を1問以上選択してください。"); return; }
+  const n=parseInt($("quizCount").value,10);
+  if(!Number.isInteger(n)||n<1||n>selectedIds.size){
+    alert(`出題数は1～${selectedIds.size}の範囲で入力してください。`); return;
+  }
+  const pool=[...selectedIds];
+  lastSessionConfig={mode:"normal",ids:pool,count:n};
+  beginSession("normal",shuffle(pool).slice(0,n),null);
+}
+function startReview(ids, sourceHistoryId=null){
+  const valid=[...new Set(ids)].filter(id=>byId(id));
+  if(!valid.length){ alert("復習できる不正解問題がありません。"); return; }
+  lastSessionConfig={mode:"review",ids:valid,count:valid.length,sourceHistoryId};
+  beginSession("review",shuffle(valid),sourceHistoryId);
+}
+function beginSession(mode, ids, sourceHistoryId){
+  session={
+    mode, ids:[...ids], index:0, answered:0, correct:0,
+    records:[], startedAt:new Date().toISOString(), sourceHistoryId
+  };
+  $("modeTitle").textContent=mode==="normal"?"通常演習":"復習モード";
+  showScreen("quiz");
+  renderQuestion();
+}
+function currentQuestion(){ return byId(session.ids[session.index]); }
+
+function renderQuestion(){
+  const q=currentQuestion();
+  $("progressText").textContent=`問題 ${session.index+1} / ${session.ids.length}　正解: ${session.correct}　不正解: ${session.answered-session.correct}`;
+  $("questionNoBadge").textContent=`収録問題 ${q.quizNumber}`;
+  $("questionText").textContent=q.question;
+  $("feedback").className="hidden";
+  $("feedback").innerHTML="";
+  $("answerBtn").classList.remove("hidden");
+  $("nextBtn").classList.add("hidden");
+  const wrap=$("choices");
+  wrap.innerHTML="";
+  q.choices.forEach((c,i)=>{
+    const label=document.createElement("label");
+    label.className="choice";
+    label.dataset.no=String(i+1);
+    const input=document.createElement("input");
+    input.type="radio"; input.name="choice"; input.value=String(i+1);
+    const span=document.createElement("span");
+    span.textContent=`${i+1}. ${c}`;
+    label.append(input,span);
+    wrap.appendChild(label);
+  });
+}
+function answerCurrent(){
+  const selected=document.querySelector('input[name="choice"]:checked');
+  if(!selected){ alert("選択肢を選んでください。"); return; }
+  const q=currentQuestion();
+  const userNo=parseInt(selected.value,10);
+  const ok=userNo===q.answer;
+  session.answered++;
+  if(ok) session.correct++;
+  session.records.push({id:q.id,userNo,correct:ok});
+
+  document.querySelectorAll(".choice").forEach(el=>{
+    const n=parseInt(el.dataset.no,10);
+    el.classList.add("disabled");
+    const radio=el.querySelector("input");
+    radio.disabled=true;
+    if(n===q.answer) el.classList.add("correct");
+    if(n===userNo && !ok) el.classList.add("wrong");
+  });
+
+  const fb=$("feedback");
+  fb.classList.remove("hidden");
+  const selectedText=`${userNo}. ${q.choices[userNo-1]}`;
+  const correctText=`${q.answer}. ${q.choices[q.answer-1]}`;
+  fb.innerHTML=`
+    <div class="result-mark ${ok?"ok":"ng"}">${ok?"○ 正解！":"× 不正解"}</div>
+    <div><strong>あなたの回答:</strong><br>${escapeHtml(selectedText)}</div>
+    <div style="margin-top:9px"><strong>正解:</strong><br>${escapeHtml(correctText)}</div>
+    <div style="margin-top:13px"><strong>【解説】</strong></div>
+    <div class="explain">${escapeHtml(q.explanation)}</div>
+    <div class="ref"><strong>参考ページ:</strong> ${escapeHtml(q.referencePage)}<br>
+    <strong>参考問題番号:</strong> ${escapeHtml(q.referenceQuestion)}</div>`;
+  $("answerBtn").classList.add("hidden");
+  $("nextBtn").classList.remove("hidden");
+  $("nextBtn").textContent=session.index===session.ids.length-1?"結果を見る":"次の問題";
+  $("progressText").textContent=`問題 ${session.index+1} / ${session.ids.length}　正解: ${session.correct}　不正解: ${session.answered-session.correct}`;
+}
+function nextQuestion(){
+  if(session.index>=session.ids.length-1){ finishSession(false); return; }
+  session.index++;
+  renderQuestion();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function earlyFinish(){
+  if(!session) return;
+  if(!confirm("演習を途中で終了しますか？\n回答済みの問題がある場合は、その時点までの結果を保存します。")) return;
+  if(session.answered===0){
+    session=null; showScreen("home"); updateHome(); return;
+  }
+  finishSession(true);
+}
+function finishSession(early){
+  const answered=session.answered;
+  const correct=session.correct;
+  const wrong=answered-correct;
+  const rate=answered ? Math.round(correct/answered*1000)/10 : 0;
+  const wrongIds=session.records.filter(r=>!r.correct).map(r=>r.id);
+  const item={
+    id:`h_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
+    timestamp:new Date().toISOString(),
+    mode:session.mode,
+    early:!!early,
+    planned:session.ids.length,
+    answered, correct, wrong, rate, wrongIds,
+    sourceHistoryId:session.sourceHistoryId||null
+  };
+  history.push(item);
+  safeSave(STORAGE_HISTORY,history);
+
+  $("resultMode").textContent=`演習モード: ${session.mode==="normal"?"通常演習":"復習"}${early?"（途中終了）":""}`;
+  $("resultScore").textContent=`${rate.toFixed(1)}%`;
+  $("resultDetail").textContent=`回答 ${answered}問 / 正解 ${correct}問 / 不正解 ${wrong}問`;
+
+  const wl=$("wrongList");
+  wl.innerHTML="";
+  if(!wrongIds.length){
+    wl.innerHTML='<div class="ok"><strong>不正解はありません。</strong></div>';
+  }else{
+    wrongIds.forEach(id=>{
+      const q=byId(id);
+      const rec=session.records.find(r=>r.id===id);
+      const div=document.createElement("div");
+      div.style.padding="10px 0";
+      div.style.borderBottom="1px solid var(--line)";
+      div.innerHTML=`<strong>問題${q.quizNumber}</strong> ${escapeHtml(q.question)}
+        <div class="notice" style="margin-top:5px">あなたの回答: ${rec.userNo}. ${escapeHtml(q.choices[rec.userNo-1])}<br>
+        正解: ${q.answer}. ${escapeHtml(q.choices[q.answer-1])}</div>`;
+      wl.appendChild(div);
+    });
+  }
+  $("reviewWrongBtn").disabled=wrongIds.length===0;
+  $("reviewWrongBtn").dataset.ids=JSON.stringify(wrongIds);
+  showScreen("result");
+}
+function retryLast(){
+  if(!lastSessionConfig) return;
+  const c=lastSessionConfig;
+  if(c.mode==="normal"){
+    const valid=c.ids.filter(id=>byId(id));
+    beginSession("normal",shuffle(valid).slice(0,Math.min(c.count,valid.length)),null);
+  }else{
+    startReview(c.ids,c.sourceHistoryId||null);
+  }
+}
+
+function renderHistory(){
+  const body=$("historyBody");
+  body.innerHTML="";
+  if(!history.length){
+    body.innerHTML='<tr><td colspan="4" class="history-empty">まだ学習履歴がありません。</td></tr>';
+    return;
+  }
+  [...history].reverse().slice(0,50).forEach(h=>{
+    const tr=document.createElement("tr");
+    const mode=h.mode==="review"?"復習":"通常";
+    tr.innerHTML=`<td>${escapeHtml(formatDate(h.timestamp))}</td>
+      <td>${mode}${h.early?"（途中）":""}</td>
+      <td>${h.correct}/${h.answered}　${Number(h.rate).toFixed(1)}%</td>
+      <td></td>`;
+    const td=tr.lastElementChild;
+    if(Array.isArray(h.wrongIds)&&h.wrongIds.length){
+      const b=document.createElement("button");
+      b.className="btn small";
+      b.textContent=`${h.wrongIds.length}問を復習`;
+      b.addEventListener("click",()=>startReview(h.wrongIds,h.id));
+      td.appendChild(b);
+    }else{
+      td.textContent="—";
+    }
+    body.appendChild(tr);
+  });
+}
+function clearHistory(){
+  if(!history.length) return;
+  if(!confirm("学習履歴をすべて消去しますか？")) return;
+  history=[];
+  safeSave(STORAGE_HISTORY,history);
+  updateHome();
+}
+
+function drawScoreChart(){
+  const canvas=$("scoreChart");
+  const parent=canvas.parentElement;
+  const ratio=window.devicePixelRatio||1;
+  const cssW=Math.max(300,parent.clientWidth-12);
+  const cssH=220;
+  canvas.width=Math.floor(cssW*ratio);
+  canvas.height=Math.floor(cssH*ratio);
+  canvas.style.width=cssW+"px";
+  canvas.style.height=cssH+"px";
+  const ctx=canvas.getContext("2d");
+  ctx.scale(ratio,ratio);
+  ctx.clearRect(0,0,cssW,cssH);
+
+  const logs=history.filter(h=>h.mode==="normal" && h.answered>0)
+                    .sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
+  const left=58,right=18,top=30,bottom=42;
+  const w=cssW-left-right,h=cssH-top-bottom;
+
+  ctx.font='12px -apple-system,BlinkMacSystemFont,"Segoe UI","Yu Gothic UI",sans-serif';
+  ctx.fillStyle="#475467";
+  ctx.textAlign="left";
+  ctx.fillText("正答率",6,14);
+
+  ctx.strokeStyle="#dfe4ea"; ctx.lineWidth=1;
+  ctx.fillStyle="#475467";
+  ctx.textAlign="right";
+  for(let p=0;p<=100;p+=20){
+    const y=top+h*(100-p)/100;
+    ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(left+w,y);ctx.stroke();
+    ctx.fillText(`${p}%`,left-8,y+4);
+  }
+  ctx.strokeStyle="#667085";
+  ctx.beginPath();ctx.moveTo(left,top);ctx.lineTo(left,top+h);ctx.lineTo(left+w,top+h);ctx.stroke();
+
+  if(!logs.length){
+    ctx.fillStyle="#667085";ctx.textAlign="center";
+    ctx.fillText("通常演習の履歴がまだありません",left+w/2,top+h/2);
+    return;
+  }
+
+  const pts=logs.map((e,i)=>{
+    const x=logs.length===1?left+w/2:left+w*i/(logs.length-1);
+    const r=Math.max(0,Math.min(100,Number(e.rate)||0));
+    const y=top+h*(100-r)/100;
+    return [x,y];
+  });
+  ctx.strokeStyle="#2563eb";ctx.lineWidth=2;
+  ctx.beginPath();
+  pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+  ctx.stroke();
+  ctx.fillStyle="#2563eb";
+  pts.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],3.5,0,Math.PI*2);ctx.fill();});
+
+  ctx.fillStyle="#344054";ctx.textAlign="center";
+  const maxLabels=cssW<520?10:20;
+  const every=Math.max(1,Math.ceil(logs.length/maxLabels));
+  pts.forEach((p,i)=>{
+    const n=i+1;
+    if(i===0||i===pts.length-1||i%every===0){
+      ctx.fillText(String(n),p[0],top+h+19);
+    }
+  });
+  ctx.textAlign="right";
+  ctx.fillText("演習回数（古い順）",left+w,cssH-5);
+}
+
+function escapeHtml(s){
+  return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+$("openSelectorBtn").addEventListener("click",openSelector);
+$("closeSelectorBtn").addEventListener("click",closeSelector);
+$("applySelectorBtn").addEventListener("click",closeSelector);
+$("selectorSearch").addEventListener("input",renderSelector);
+$("selectAllBtn").addEventListener("click",()=>setAllSelection(true));
+$("clearAllBtn").addEventListener("click",()=>setAllSelection(false));
+$("invertBtn").addEventListener("click",invertSelection);
+$("startBtn").addEventListener("click",startNormal);
+$("answerBtn").addEventListener("click",answerCurrent);
+$("nextBtn").addEventListener("click",nextQuestion);
+$("earlyFinishBtn").addEventListener("click",earlyFinish);
+$("homeBtn").addEventListener("click",()=>{session=null;showScreen("home");updateHome();});
+$("retryBtn").addEventListener("click",retryLast);
+$("reviewWrongBtn").addEventListener("click",()=>{
+  const ids=JSON.parse($("reviewWrongBtn").dataset.ids||"[]");
+  startReview(ids,null);
+});
+$("clearHistoryBtn").addEventListener("click",clearHistory);
+window.addEventListener("resize",()=>{ if(!homeScreen.classList.contains("hidden")) drawScoreChart(); });
+window.addEventListener("beforeunload",(e)=>{
+  if(session && session.answered<session.ids.length){
+    e.preventDefault(); e.returnValue="";
+  }
+});
+
+updateHome();
+</script>
+
+<script>
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+</script>
+
+</body>
+</html>
