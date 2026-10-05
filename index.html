@@ -85,6 +85,14 @@ canvas{display:block;width:100%;height:220px}
 .status.wrong{background:#fff0f0;color:#b42318}
 .status.retry{background:var(--retrybg);color:#805b00}
 .footer-note{font-size:12px;color:#7b8794;margin-top:16px;line-height:1.6}
+
+.mascot-card{display:flex;gap:18px;align-items:center;background:linear-gradient(135deg,#fffdf8,#f8fbff);overflow:hidden}
+.mascot-image-wrap{flex:0 0 190px;text-align:center}.mascot-image{width:190px;height:190px;object-fit:cover;border-radius:18px;border:1px solid #eadfcd;background:#fff}
+.mascot-info{flex:1;min-width:0}.mascot-stage{font-size:13px;font-weight:800;color:#805b00;margin-bottom:7px}.mascot-comment{font-size:18px;font-weight:800;line-height:1.65;margin-bottom:12px}
+.mascot-name-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}.mascot-name-row .input{min-width:180px}.mascot-name{font-weight:900;color:#1d4ed8}
+.mascot-history-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}.mascot-history-item{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}.mascot-history-item img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:9px}.mascot-history-item .mh-stage{font-weight:850;margin:8px 0 4px}.mascot-history-item .mh-comment{font-size:13px;line-height:1.55;color:#475467}
+@media(max-width:620px){.mascot-card{align-items:flex-start}.mascot-image-wrap{flex-basis:118px}.mascot-image{width:118px;height:118px}.mascot-comment{font-size:15px}.mascot-card{gap:12px}.mascot-name-row{display:grid}.mascot-name-row .input{min-width:0;width:100%}}
+
 @media(max-width:760px){
  .app{padding:12px 10px 34px}.card{padding:14px;border-radius:12px}
  .stats{grid-template-columns:1fr 1fr}.stat .n{font-size:21px}
@@ -100,6 +108,20 @@ canvas{display:block;width:100%;height:220px}
 <div class="app">
 <section id="homeScreen">
   <h1>NST専門療法士認定試験 問題演習</h1>
+
+
+  <div class="card mascot-card" id="mascotCard">
+    <div class="mascot-image-wrap"><img id="mascotImage" class="mascot-image" src="./mascot/stage1.png" alt="成長する栄養マスコット"></div>
+    <div class="mascot-info">
+      <div class="mascot-stage" id="mascotStageLabel">たまご期</div>
+      <div class="mascot-comment" id="mascotComment">ただのたまごだ。問題を正解していくと生まれるかも！？</div>
+      <div id="mascotNameArea" class="hidden">
+        <div class="notice">生まれたマスコットに名前をつけよう！</div>
+        <div class="mascot-name-row"><input id="mascotNameInput" class="input" maxlength="20" placeholder="名前を入力"><button class="btn primary" id="saveMascotNameBtn">この名前にする</button></div>
+      </div>
+      <div class="row"><button class="btn small" id="mascotHistoryBtn">過去のイラスト</button><button class="btn small hidden" id="renameMascotBtn">名前を変更</button></div>
+    </div>
+  </div>
 
   <div class="card">
     <div class="stats">
@@ -206,6 +228,14 @@ canvas{display:block;width:100%;height:220px}
 </section>
 </div>
 
+
+<div id="mascotHistoryModal" class="modal hidden">
+  <div class="modal-panel" style="width:min(900px,100%)">
+    <div class="modal-head"><div class="row space"><h2 style="margin:0">過去のイラスト</h2><button class="btn small" id="closeMascotHistoryBtn">閉じる</button></div></div>
+    <div class="modal-body"><div id="mascotHistoryGrid" class="mascot-history-grid"></div></div>
+  </div>
+</div>
+
 <div id="selectorModal" class="modal hidden">
   <div class="modal-panel">
     <div class="modal-head">
@@ -252,6 +282,8 @@ const LEGACY_QUESTION_COUNT = 195;
 const STORAGE_SELECTION = "nst_html_selected_v1";
 const STORAGE_HISTORY = "nst_html_history_v1";
 const STORAGE_PROGRESS = "nst_html_progress_v2";
+const STORAGE_MASCOT_NAME = "nst_html_mascot_name_v1";
+const STORAGE_MASCOT_MAX_STAGE = "nst_html_mascot_max_stage_v1";
 
 const $ = id => document.getElementById(id);
 const homeScreen=$("homeScreen"),quizScreen=$("quizScreen"),resultScreen=$("resultScreen");
@@ -280,6 +312,38 @@ let progress=safeLoad(STORAGE_PROGRESS,{});
 if(!progress||typeof progress!=="object"||Array.isArray(progress))progress={};
 
 let session=null,lastSessionConfig=null;
+
+const MASCOT_STAGES=[
+ {min:0,label:"たまご期",image:"./mascot/stage1.png",comment:"ただのたまごだ。問題を正解していくと生まれるかも！？"},
+ {min:1,label:"ひびわれ期",image:"./mascot/stage2.png",comment:"ヒビが入ってきた！なにが生まれるんだ！？"},
+ {min:20,label:"誕生期",image:"./mascot/stage3.png",comment:"まさかのたまごが生まれてきた！どうなっているんだ！！？"},
+ {min:40,label:"成長期",image:"./mascot/stage4.png",comment:"{name}に芽が生えてきた！栄養の力ですくすく成長しているぞ！"},
+ {min:60,label:"たくましい成長期",image:"./mascot/stage5.png",comment:"{name}がかなりたくましくなった！バランスよく栄養を身につけている！"},
+ {min:80,label:"NSTエキスパート期",image:"./mascot/stage6.png",comment:"{name}がついに白衣を着た！NSTの専門家らしくなってきたぞ！キングまであと少し！"},
+ {min:100,label:"NSTキング",image:"./mascot/stage7.png",comment:"{name}がついにNSTキングになった！！全問題制覇、おめでとう！"}
+];
+function mascotStageIndex(rate){let idx=0;MASCOT_STAGES.forEach((st,i)=>{if(rate>=st.min)idx=i});return idx}
+function mascotName(){try{return localStorage.getItem(STORAGE_MASCOT_NAME)||""}catch(e){return""}}
+function saveMascotNameValue(name){try{localStorage.setItem(STORAGE_MASCOT_NAME,name)}catch(e){}}
+function mascotMaxStage(){try{return Math.max(0,Math.min(6,Number(localStorage.getItem(STORAGE_MASCOT_MAX_STAGE))||0))}catch(e){return 0}}
+function saveMascotMaxStage(i){try{localStorage.setItem(STORAGE_MASCOT_MAX_STAGE,String(Math.max(mascotMaxStage(),i)))}catch(e){}}
+function mascotText(st,name){return st.comment.replaceAll("{name}",name?`「${name}」`:"この子")}
+function renderMascot(correct){
+ const rate=QUESTIONS.length?100*correct/QUESTIONS.length:0,idx=mascotStageIndex(rate),st=MASCOT_STAGES[idx];saveMascotMaxStage(idx);
+ $("mascotImage").src=st.image;$("mascotStageLabel").textContent=`${st.label}　正解済み ${rate.toFixed(1)}%`;
+ const name=mascotName();let text=mascotText(st,name);if(idx===2&&name)text+=` 名前は「${name}」！`;
+ $("mascotComment").textContent=text;
+ $("mascotNameArea").classList.toggle("hidden",idx<2||!!name);$("renameMascotBtn").classList.toggle("hidden",idx<2||!name);
+}
+function saveMascotNameFromInput(){const name=$("mascotNameInput").value.trim();if(!name){alert("名前を入力してください。");return}saveMascotNameValue(name);$("mascotNameInput").value="";renderMascot(correctCount())}
+function showMascotNameEditor(){const name=mascotName();$("mascotNameInput").value=name;$("mascotNameArea").classList.remove("hidden");$("mascotNameInput").focus()}
+function openMascotHistory(){
+ const max=mascotMaxStage(),name=mascotName(),grid=$("mascotHistoryGrid");grid.innerHTML="";
+ for(let i=0;i<=max;i++){const st=MASCOT_STAGES[i],item=document.createElement("div");item.className="mascot-history-item";let txt=mascotText(st,name);if(i===2&&name)txt+=` 名前は「${name}」！`;item.innerHTML=`<img src="${st.image}" alt="${escapeHtml(st.label)}"><div class="mh-stage">${escapeHtml(st.label)}</div><div class="mh-comment">${escapeHtml(txt)}</div>`;grid.appendChild(item)}
+ $("mascotHistoryModal").classList.remove("hidden");
+}
+function closeMascotHistory(){$("mascotHistoryModal").classList.add("hidden")}
+
 
 function getProgress(id){
   const p=progress[id]||{};
@@ -346,6 +410,7 @@ function updateHome(){
   $("retryInfo").textContent=r?`再挑戦に登録中: ${r}問。`:"再挑戦に登録した問題はありません。";
   $("startRetryBtn").disabled=r===0;
   $("retryQuizCount").disabled=r===0;
+  renderMascot(c);
   renderHistory();drawScoreChart();
 }
 function prioritizedPick(ids,n){
@@ -558,6 +623,12 @@ function drawScoreChart(){
   ctx.textAlign="right";ctx.fillText("演習回数（古い順）",left+w,cssH-5);
 }
 
+$("mascotHistoryBtn").addEventListener("click",openMascotHistory);
+$("closeMascotHistoryBtn").addEventListener("click",closeMascotHistory);
+$("saveMascotNameBtn").addEventListener("click",saveMascotNameFromInput);
+$("renameMascotBtn").addEventListener("click",showMascotNameEditor);
+$("mascotNameInput").addEventListener("keydown",e=>{if(e.key==="Enter")saveMascotNameFromInput()});
+$("mascotHistoryModal").addEventListener("click",e=>{if(e.target===$("mascotHistoryModal"))closeMascotHistory()});
 $("openSelectorBtn").addEventListener("click",openSelector);
 $("closeSelectorBtn").addEventListener("click",closeSelector);
 $("applySelectorBtn").addEventListener("click",closeSelector);
